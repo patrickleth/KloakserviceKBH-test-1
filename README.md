@@ -112,8 +112,13 @@ Fejler en af dem, går leadet stadig igennem, og der sendes alarm. Fejler alle, 
 | `LEAD_FROM` | nej | Afsender. Standard: `BRAND_NAME <hjemmeside@MAILGUN_DOMAIN>` |
 | `ALERT_EMAIL` | anbefalet | Hvem får alarm, hvis en kanal fejler |
 | `ALERT_WEBHOOK_URL` | anbefalet | Alarm når Mailgun selv er nede (fx Slack eller Make) |
-| `CONFIRM_TO_LEAD` | nej | `true` sender kvitteringsmail til den besøgende |
-| `CONFIRM_PROMISE` | nej | Fx `inden for 24 timer` i kvitteringen |
+| `CONFIRM_TO_LEAD` | nej | Bekræftelse til den besøgende er slået til som standard. `false` slår den fra for kunden |
+| `CONFIRM_MAILGUN_DOMAIN` | nej | Eget afsenderdomæne til bekræftelser, fx `b.indsendelse.dk`. Uden: samme som `MAILGUN_DOMAIN` |
+| `CONFIRM_FROM` | nej | Fx `KloakServiceKbh <bekraeftelse@b.indsendelse.dk>` |
+| `CONFIRM_PHONE` | nej | Telefonnummer i bekræftelsen ("Haster det, så ring på ...") |
+| `CONFIRM_PROMISE` | nej | Fx `inden for 24 timer` i bekræftelsen |
+
+Bekræftelsen er ren tekst uden links og gentager ikke det, den besøgende skrev. Hver adresse får højst én pr. døgn, så formularen ikke kan misbruges til at sende spam.
 | `ALLOWED_ORIGINS` | nej | Ekstra domæner der må sende til formularen (kommasepareret) |
 | `GTM_ID` | nej | Overskriver `tracking.gtmId` fra site.json |
 | `META_PIXEL_ID` | nej | Overskriver `tracking.metaPixelId` fra site.json |

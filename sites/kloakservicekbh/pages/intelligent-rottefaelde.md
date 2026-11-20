@@ -1,6 +1,7 @@
 ---
 type: service
 navLabel: Intelligent rottefælde
+menuText: "Giftfri og miljøvenlig TRAP-X rottefælde"
 title: "Intelligent rottefælde | KloakServiceKbh"
 description: ""
 h1: "Intelligent og miljøvenlig rottebekæmpelse med TRAP-X"

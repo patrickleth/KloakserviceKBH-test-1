@@ -1,6 +1,7 @@
 ---
 type: service
 navLabel: Stoppet toilet
+menuText: "Skånsom og effektiv afhjælpning"
 title: "Har du et stoppet toilet? Sådan løser du det"
 description: "Et stoppet toilet kan være både frustrerende og ubelejligt i hverdagen. Vi løser problemet effektivt og skånsomt, så du hurtigt får et velfungerende toilet igen."
 h1: "Døjer du med et stoppet toilet?"

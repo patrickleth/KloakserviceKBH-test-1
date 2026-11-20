@@ -1,6 +1,7 @@
 ---
 type: service
 navLabel: Rodskæring
+menuText: "Fjerner rødder, der blokerer kloakken"
 title: "Rodskæring | Bestil et gratis tilbud med det samme | Ring nu"
 description: "Få professionel Rodskæring tilpasset dine behov hos KloakServiceKbh. Undgå alvorlige skader i fremtiden med os på sidelinjen."
 h1: "Vi tilbyder rodskæring"

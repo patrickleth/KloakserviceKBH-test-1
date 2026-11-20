@@ -1,14 +1,58 @@
 ---
 // Header: logo til venstre, menu i midten, telefon-pille til højre.
 // Over en hero ligger den gennemsigtig med lys tekst og bliver hvid og fast, når man scroller (se site.ts).
+//
+// Mega-menu: et menupunkt med "mega": true (standard: det første punkt med undersider, fx "Vi tilbyder")
+// åbner i fuld bredde ved hover. Ydelserne kan deles i grupper ("groups": [{ "label", "children" }]).
+// Hver ydelse viser ikon, navn og en kort sætning (menuText, ellers første sætning af beskrivelsen),
+// og billedet af ydelsen toner ind til højre, når man holder musen over den.
+import { getImage } from 'astro:assets';
 import { site, href, bySlug, telHref, IS_TEST, TEST_FORM } from '../lib/site';
+import { resolveImage } from '../lib/images';
+import { iconFor } from '../lib/icons';
 import Icon from './Icon.astro';
+import LineIcon from './LineIcon.astro';
 interface Props { current?: string; minimal?: boolean; overHero?: boolean }
 const { current = '', minimal = false, overHero = false } = Astro.props;
 const pages = await bySlug();
 const exists = (s: string) => s in pages;
 const label = (s: string) => pages[s]?.data.navLabel ?? s;
-const desc = (s: string) => pages[s]?.data.menuText;
+
+// Kort tekst under hvert menupunkt: menuText, ellers første sætning af beskrivelsen, skåret ved et ord.
+const short = (t = '', max = 64) => {
+  const first = (t.match(/^.*?[.!?](\s|$)/)?.[0] || t).trim().replace(/[.!?]$/, '');
+  if (first.length <= max) return first;
+  return first.slice(0, max).replace(/\s+\S*$/, '') + '…';
+};
+const desc = (s: string) => pages[s]?.data.menuText || short(pages[s]?.data.description || pages[s]?.data.intro);
+
+// Billede pr. ydelse: sidens hero, ellers første billede, ellers galleriet. Lokale billeder gøres små (640 px webp).
+const gallery = site.gallery || [];
+async function smallSrc(src?: string) {
+  const r = resolveImage(src);
+  if (!r) return undefined;
+  if (typeof r === 'string') return r;
+  return (await getImage({ src: r, width: 640, format: 'webp' })).src;
+}
+async function itemOf(s: string, i: number) {
+  const d = pages[s].data;
+  const pic = d.heroImage || d.images?.[0] || gallery[i % (gallery.length || 1)];
+  return { slug: s, label: label(s), desc: desc(s), icon: d.icon || iconFor(s, d.navLabel), img: await smallSrc(pic?.src), alt: pic?.alt || '' };
+}
+
+const megaIndex = site.menu.findIndex((m: any) => m.mega === true);
+const firstSub = site.menu.findIndex((m: any) => m.children || m.groups);
+const megaAt = megaIndex >= 0 ? megaIndex : firstSub;
+const menu = await Promise.all(site.menu.map(async (m: any, idx: number) => {
+  if (!(m.children || m.groups)) return m;
+  const groups = (m.groups || [{ label: '', children: m.children }]).map((g: any) => ({ label: g.label, children: g.children.filter(exists) }));
+  let n = 0;
+  const withItems = await Promise.all(groups.map(async (g: any) => ({ label: g.label, items: await Promise.all(g.children.map((s: string) => itemOf(s, n++))) })));
+  return { ...m, mega: idx === megaAt && m.mega !== false, groups: withItems };
+}));
+const blogOff = site.blog?.enabled === false;
+const fallbackImg = await smallSrc(gallery[0]?.src || site.brand.work?.src || site.brand.hero?.src);
+const aside = site.megaAside || { heading: 'Haster det?', text: site.phoneHours || 'Ring, så hjælper vi dig med det samme.' };
 ---
 {IS_TEST && <div class="testbar">Testversion bygget af Vækster. Siden indekseres ikke af Google{TEST_FORM ? ', og henvendelser lander kun i CRM\'et.' : ', og formularen sender ikke noget.'}</div>}
 <a class="skip" href="#indhold">Spring til indhold</a>
@@ -22,12 +66,48 @@ const desc = (s: string) => pages[s]?.data.menuText;
       <nav class="main-nav" aria-label="Hovedmenu">
         <button class="menu-btn" type="button" aria-expanded="false" aria-controls="nav" aria-label="Åbn menu"><span class="burger" aria-hidden="true"><i></i><i></i><i></i></span></button>
         <ul class="nav-list" id="nav">
-          {site.menu.map((m: any) => m.children ? (
+          {menu.map((m: any) => m.groups && m.mega ? (
+            <li class="has-sub mega" data-mega>
+              <details>
+                <summary>{m.label}</summary>
+                <div class="mega-panel">
+                  <div class="wrap mega-grid">
+                    <div class="mega-cols">
+                      {m.groups.map((g: any) => (
+                        <div class:list={['mega-group', { wide: g.items.length > 8 }]}>
+                          {g.label && <p class="mega-group-h">{g.label}</p>}
+                          <ul>
+                            {g.items.map((it: any) => (
+                              <li><a href={href(it.slug)} data-mega-item={it.slug} data-img={it.img} aria-current={it.slug === current ? 'page' : undefined}>
+                                <span class="mega-ic"><LineIcon name={it.icon} size={20} /></span>
+                                <span class="mega-txt"><span class="mega-name">{it.label}</span>{it.desc && <small>{it.desc}</small>}</span>
+                              </a></li>
+                            ))}
+                          </ul>
+                        </div>
+                      ))}
+                    </div>
+                    <aside class="mega-side">
+                      <div class="mega-media" data-mega-media>
+                        {fallbackImg && <img class="on" src={fallbackImg} alt="" width="640" height="480" loading="lazy" decoding="async" />}
+                        <img alt="" width="640" height="480" decoding="async" />
+                      </div>
+                      <div class="mega-akut">
+                        <p class="mega-akut-h"><LineIcon name="alert" size={18} />{aside.heading}</p>
+                        <p>{aside.text}</p>
+                        <a class="btn btn-pill btn-call btn-sm" href={telHref} data-track="tel_click"><Icon name="phone" size={14} />{site.phone.display}</a>
+                      </div>
+                    </aside>
+                  </div>
+                </div>
+              </details>
+            </li>
+          ) : m.groups ? (
             <li class="has-sub"><details><summary>{m.label}</summary><ul>
-              {m.children.filter(exists).map((s: string) => <li><a href={href(s)} aria-current={s === current ? 'page' : undefined}><span>{label(s)}</span>{desc(s) && <small>{desc(s)}</small>}</a></li>)}
+              {m.groups.flatMap((g: any) => g.items).map((it: any) => <li><a href={href(it.slug)} aria-current={it.slug === current ? 'page' : undefined}><span>{it.label}</span>{it.desc && <small>{it.desc}</small>}</a></li>)}
             </ul></details></li>
           ) : m.href ? (
-            <li><a href={m.href} aria-current={current && m.href === `/${current}/` ? 'page' : undefined}>{m.label}</a></li>
+            blogOff && m.href === '/blog/' ? null : <li><a href={m.href} aria-current={current && m.href === `/${current}/` ? 'page' : undefined}>{m.label}</a></li>
           ) : exists(m.slug) ? (
             <li><a href={href(m.slug)} aria-current={m.slug === current ? 'page' : undefined}>{m.label}</a></li>
           ) : null)}

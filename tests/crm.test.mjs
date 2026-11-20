@@ -125,7 +125,7 @@ test('lead fra formularen lander i CRM med filer, også når Make og Mailgun ikk
 test('CRM-fejl giver alarm, men leadet går igennem via mail', async () => {
   const sent = [];
   const fakeFetch = async (url, init) => { sent.push(String(url)); return new Response('{}', { status: 200 }); };
-  const env2 = { MAILGUN_API_KEY: 'k', MAILGUN_DOMAIN: 'mg.ex.dk', LEAD_TO: 'kunde@ex.dk', ALERT_EMAIL: 'alarm@ex.dk' };
+  const env2 = { MAILGUN_API_KEY: 'k', MAILGUN_DOMAIN: 'mg.ex.dk', LEAD_TO: 'kunde@ex.dk', ALERT_EMAIL: 'alarm@ex.dk', CONFIRM_TO_LEAD: 'false' };
   const r = await handleLead(new Request('https://kunde.dk/api/lead', { method: 'POST', body: JSON.stringify({ navn: 'A', telefon: '12345678', email: 'a@ex.dk', beskrivelse: 'x', t: 9000 }), headers: { 'Content-Type': 'application/json', Accept: 'application/json' } }), env2, { fetch: fakeFetch, crm: { saveFromForm: async () => { throw new Error('blobs nede'); } }, log: () => {} });
   assert.equal(r.status, 200);
   assert.equal(sent.filter(u => u.includes('mailgun')).length, 2); // leadmail + alarm

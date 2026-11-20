@@ -1,6 +1,7 @@
 ---
 type: service
 navLabel: Faskine
+menuText: "Nedsivning af regnvand og aflastning af kloak"
 title: "Faskine i København | Nedsiv regnvandet effektivt"
 description: "Få etableret en faskine i København. Effektiv nedsivning af regnvand og aflastning af kloak. Kontakt os for rådgivning og tilbud."
 h1: "Faskine leder regnvandet væk"

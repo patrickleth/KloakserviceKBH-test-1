@@ -134,6 +134,64 @@ document.addEventListener('click', e => {
   document.querySelectorAll('.has-sub details[open]').forEach(d => { if (!d.contains(e.target as Node)) d.removeAttribute('open'); });
 });
 
+// ---------- Mega-menu: åbner ved hover på computer, ved tryk på touch, lukker med Escape ----------
+const finePointer = matchMedia('(hover: hover) and (pointer: fine)');
+const desktop = () => finePointer.matches && innerWidth > 960;
+const headerEl = document.querySelector<HTMLElement>('[data-header]');
+document.querySelectorAll<HTMLElement>('[data-mega]').forEach(li => {
+  const d = li.querySelector('details')!;
+  const sum = d.querySelector('summary')!;
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  // Lille forsinkelse begge veje, så menuen ikke blinker, når musen bare passerer forbi.
+  const later = (open: boolean) => { clearTimeout(timer); timer = setTimeout(() => { open ? d.setAttribute('open', '') : d.removeAttribute('open'); }, open ? 110 : 220); };
+  li.addEventListener('mouseenter', () => { if (desktop()) later(true); });
+  li.addEventListener('mouseleave', () => { if (desktop()) later(false); });
+  sum.addEventListener('click', e => { if (desktop() && d.open) e.preventDefault(); });
+  d.addEventListener('toggle', () => headerEl?.classList.toggle('mega-open', d.open && innerWidth > 960));
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && d.open) { const inside = li.contains(document.activeElement); d.removeAttribute('open'); if (inside) sum.focus(); } });
+  // Billedet af ydelsen toner ind til højre. To billeder skiftes, så overgangen er blød.
+  const media = li.querySelector<HTMLElement>('[data-mega-media]');
+  const layers = media ? Array.from(media.querySelectorAll('img')) : [];
+  let current = layers.findIndex(im => im.classList.contains('on'));
+  const show = (src?: string) => {
+    if (!src || layers.length < 2) return;
+    const cur = layers[current >= 0 ? current : 0];
+    if (cur.getAttribute('src') === src) return;
+    const next = layers[current === 0 ? 1 : 0];
+    next.onload = () => { next.classList.add('on'); cur.classList.remove('on'); current = layers.indexOf(next); };
+    next.setAttribute('src', src);
+  };
+  li.querySelectorAll<HTMLElement>('[data-mega-item]').forEach(a => {
+    const go = () => show(a.dataset.img);
+    a.addEventListener('mouseenter', go);
+    a.addEventListener('focus', go);
+  });
+});
+
+// ---------- Diskrete animationer: sektioner og kort glider ind, tal tælles op ----------
+const calm = matchMedia('(prefers-reduced-motion: reduce)').matches;
+if (!calm && 'IntersectionObserver' in window) {
+  root.classList.add('rv');
+  const countUp = (el: HTMLElement) => {
+    const end = Number(el.dataset.count), pre = el.dataset.pre || '', post = el.dataset.post || '';
+    const t0 = performance.now(), dur = 1200;
+    const step = (t: number) => {
+      const k = Math.min(1, (t - t0) / dur), v = Math.round(end * (1 - Math.pow(1 - k, 3)));
+      el.textContent = pre + v + post;
+      if (k < 1) requestAnimationFrame(step); else el.textContent = pre + end + post;
+    };
+    requestAnimationFrame(step);
+  };
+  const io = new IntersectionObserver(entries => entries.forEach(e => {
+    if (!e.isIntersecting) return;
+    const el = e.target as HTMLElement;
+    el.classList.add('in');
+    el.querySelectorAll<HTMLElement>('[data-count]').forEach(countUp);
+    io.unobserve(el);
+  }), { rootMargin: '0px 0px -8% 0px' });
+  document.querySelectorAll('.reveal, .stagger').forEach(el => io.observe(el));
+}
+
 // ---------- Hero-video: stop for dem der har slået bevægelse fra ----------
 const vid = document.querySelector<HTMLVideoElement>('.hero-video');
 if (vid && (matchMedia('(prefers-reduced-motion: reduce)').matches || (navigator as any).connection?.saveData)) { vid.pause(); vid.removeAttribute('autoplay'); }

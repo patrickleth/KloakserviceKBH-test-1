@@ -6,6 +6,7 @@
 //   sikkerhed/<...>  tællere til lås ved for mange loginforsøg
 //   bruger/<navn>    ny adgangskode efter "Glemt adgangskode" (går forud for ADMIN_USERS)
 //   nulstil/<sha256> engangslink til ny adgangskode (gyldigt i 30 minutter)
+//   bekr/<sha256>    hvornår en e-mailadresse sidst fik en bekræftelsesmail (højst én pr. døgn)
 import { parseUsers, verifyPassword, hashPassword, signSession, readSession, getCookie, sessionCookie, throttleKey, passVersion, sha256, newToken } from './admin-auth.mjs';
 
 // Standard-stages. Kan tilpasses i CRM'et (gemmes i config/stages). "arkiveret" findes altid og vises ikke på boardet.
@@ -37,6 +38,14 @@ export function crmStore(store) {
   const put = lead => store.setJSON(`lead/${lead.id}`, lead);
   return {
     get, put,
+    /** Må denne adresse få en bekræftelsesmail nu? Højst én pr. døgn, så formularen ikke kan bruges til at bombe en indbakke. */
+    async confirmOnce(email, now = Date.now()) {
+      const key = `bekr/${sha256(String(email).trim().toLowerCase())}`;
+      const last = (await store.get(key, { type: 'json' }))?.ts || 0;
+      if (now - last < 24 * 3600 * 1000) return false;
+      await store.setJSON(key, { ts: now });
+      return true;
+    },
     /** Gem et lead fra hjemmesidens formular (inkl. filer). Kaldes af lead-core. */
     async saveFromForm(lead, files = [], now = Date.now()) {
       const filer = [];

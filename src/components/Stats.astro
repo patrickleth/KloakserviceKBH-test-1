@@ -1,8 +1,22 @@
 ---
+// Talstrimmel: mørkt bånd med ikon og nøgletal. Rene tal tælles op, når båndet kommer i syne (site.ts).
 import { site } from '../lib/site';
+import { iconFor } from '../lib/icons';
+import LineIcon from './LineIcon.astro';
+// "+5000" og "25+" tælles op; "24/7" og "2 timer" står som de er.
+const countable = (v: string) => { const m = String(v).match(/^(\+?)(\d+)(\+?)$/); return m ? { pre: m[1], n: m[2], post: m[3] } : null; };
 ---
 {site.stats.length > 0 && (
-  <section class="stats" aria-label="Nøgletal"><ul class="wrap stats-row">
-    {site.stats.map((s: any) => <li><strong>{s.value}</strong><span>{s.label}</span></li>)}
+  <section class="stats" aria-label="Nøgletal"><ul class="wrap stats-row stagger reveal-group">
+    {site.stats.map((s: any) => {
+      const c = countable(s.value);
+      return (
+        <li>
+          <LineIcon name={s.icon || iconFor(s.label, s.value)} size={28} />
+          <strong data-count={c ? c.n : undefined} data-pre={c?.pre || undefined} data-post={c?.post || undefined}>{s.value}</strong>
+          <span>{s.label}</span>
+        </li>
+      );
+    })}
   </ul></section>
 )}

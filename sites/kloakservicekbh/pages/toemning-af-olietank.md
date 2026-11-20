@@ -1,6 +1,7 @@
 ---
 type: service
 navLabel: Tømning af olietank
+menuText: "Tømning og rensning af olietanke"
 title: "Tømning af olietank | Få en komplet rensning i dag | Ring nu"
 description: "Få professionel tømning og rensning af olietank fra KloakServiceKbh. Undgå lugtgener og forlæng olietankens levetid. Ring i dag."
 h1: "Tømning af olietank"

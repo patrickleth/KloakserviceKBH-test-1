@@ -1,6 +1,7 @@
 ---
 type: service
 navLabel: Kloakservice
+menuText: "Alt i kloakarbejde, privat og erhverv"
 title: "KloakServiceKbh | Tilbud Inden For 1 Time | 25 Års Erfaring"
 description: "Kloakservice i hele Hovedstadsområdet. Hos KloakServiceKbh kan du kun forvente et effektivt og kvalitetsbevidst arbejde. Få et godt tilbud!"
 h1: "Kloakservice du kan regne med 24/7"

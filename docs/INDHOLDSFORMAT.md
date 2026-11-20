@@ -100,3 +100,38 @@ FAQ kan også skrives i brødteksten: en sektion `## Ofte stillede spørgsmål` 
 - **Hero:** `eyebrow: "Aut. kloakmester"` (lille mærke over H1) og `heroVideo: { src: "/video.mp4" }` på siden eller `brand.heroVideo` i site.json for alle sider. Videoen afspilles lydløst i loop; billedet bruges som plakat og til dem, der har slået bevægelse fra.
 - **site.json:** `gallery` (ekstra billeder til sektioner), `logoRows` (fx "Som nævnt i danske medier", certificeringer), `thankYou.faq` (spørgsmål på takkesiden), `thankYou.steps` (egne trin under "Hvad sker der nu?"), `form.files` (vedhæft filer, standard til), `form.thankYou` (takkeside, standard "henvendelse"), `tracking.metaPixelId`, `tracking.consentMode` ("basic" eller "advanced"), `reviews[].date`.
 - **Bysider:** sæt `formService` til ydelsen (fx "Slamsugning"), så siden vises i områdeblokken på ydelsessiden og forsiden.
+
+## Nyt i v0.5
+
+**Mega-menu.** Det første menupunkt med undersider (normalt "Vi tilbyder") bliver en mega-menu i fuld bredde, der åbner ved hover. Ydelserne kan deles i grupper:
+
+```json
+{ "label": "Vi tilbyder", "mega": true, "groups": [
+  { "label": "Ydelser", "children": ["kloakspuling", "tv-inspektion"] },
+  { "label": "Tilstopninger", "children": ["stoppet-afloeb"] }
+] }
+```
+
+Boksen til højre styres af `megaAside` i site.json (`heading`, `text`). Uden den står der "Haster det?" og kundens åbningstider.
+
+**Pr. side (frontmatter):**
+
+| Felt | Betydning |
+| --- | --- |
+| `menuText` | Kort sætning under ydelsen i mega-menuen (højst cirka 45 tegn). Uden: første sætning af `description` |
+| `icon` | Ikon i mega-menu og ydelseskort, fx `camera`, `waves`, `truck`. Uden: gættes ud fra adressen. Navnene står i `src/lib/icons.ts` |
+| `images[].focus` | Hvilken del af billedet der skal blive synlig ved beskæring: `top`, `bottom`, `left`, `right` eller `center` |
+| `process.steps[].icon` | Ikon på hvert trin i "Sådan foregår det" |
+
+**Layoutregler (gælder alle kunder):**
+
+- Billeder ved siden af tekst får samme højde som teksten (beskåret). På mobil er de altid 5:4.
+- Hver fjerde sektion med billede bliver et bånd i fuld bredde med teksten i et kort. To sektioner i træk har aldrig samme layout.
+- Punktlister med 2 til 8 korte punkter vises som kort med ikon.
+- Der står altid et rundt billede over formularen: portræt (`brand.person`), ellers logo, ellers favicon, ellers et ikon.
+- Overlinjer bruges kun sammen med en overskrift. Bånd med logoer og anmeldelser har en rigtig overskrift.
+- Sektioner og kort glider diskret ind. Det slås fra for besøgende, der har valgt "reducer bevægelse".
+
+**Blog og guides kun for SEO-kunder.** `"blog": { "enabled": false }` i site.json slår blogruter, menupunktet og afsnittet i llms.txt fra. `"label"` ændrer navnet (fx "Guides").
+
+**llms.txt** bygges automatisk med kontakt, ydelser, områder, blog og de øvrige sider.

@@ -1,6 +1,7 @@
 ---
 type: service
 navLabel: Højvandslukke
+menuText: "Undgå oversvømmelse fra kloakken"
 title: "Højvandslukke i København | Installation og service"
 description: "Undgå oversvømmelse med højvandslukke. Vi monterer og servicerer højvandslukke i hele København. Få et tilbud i dag."
 h1: "Beskyttelse mod oversvømmelse med højvandslukke"

@@ -1,6 +1,7 @@
 ---
 type: service
 navLabel: Stoppet afløb
+menuText: "Vandet løber frit igen, hurtigt"
 title: "Har du et stoppet afløb? Få akut hjælp her"
 description: "Et stoppet afløb opstår ofte på grund af fedt, sæberester eller hår, der sætter sig fast i rørene. Vi klarer problemet hurtigt og grundigt, så vandet igen kan løbe frit gennem dit afløb."
 h1: "Skal vi hjælpe med et stoppet afløb?"

@@ -1,6 +1,7 @@
 ---
 type: service
 navLabel: Højtryksspuling
+menuText: "Effektiv spuling af rør og ledninger"
 title: "Højtryksspuling | Tilbud Inden For 1 Time | 25 Års Erfaring"
 description: "Højtryksspuling i Hovedstadsområdet. Hos KloakServiceKbh kan du kun forvente et effektivt og kvalitetsbevidst arbejde. Få et godt tilbud!"
 h1: "Vi tilbyder højtryksspuling"

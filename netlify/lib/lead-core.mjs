@@ -82,6 +82,19 @@ function leadMail(lead, siteName) {
  * @param {Record<string,string|undefined>} env
  * @param {{ fetch?: typeof fetch, now?: () => number, log?: (...a:any[]) => void, waitUntil?: (p: Promise<any>) => void, crm?: { saveFromForm: Function } | null }} deps
  */
+/** Bekræftelsesmail til den besøgende: ren tekst, ingen links og ingen gentagelse af det, den besøgende skrev. */
+export function confirmMail(lead, siteName, env = {}) {
+  const raw = String(lead.navn || '').trim();
+  // Navnet er det eneste fra formularen, der kommer med. Ligner det et link eller reklame, bruges det ikke.
+  const safeName = raw && raw.length <= 40 && !/(https?:|www\.|\.[a-z]{2,}(\/|\b)|@|[<>])/i.test(raw) ? raw.split(/\s+/)[0] : '';
+  const promise = env.CONFIRM_PROMISE || 'hurtigst muligt';
+  const phone = env.CONFIRM_PHONE ? `\n\nHaster det, så ring på ${env.CONFIRM_PHONE}.` : '';
+  return {
+    subject: `Tak for din henvendelse til ${siteName}`,
+    text: `Hej${safeName ? ' ' + safeName : ''}\n\nTak for din henvendelse til ${siteName}. Vi har modtaget den og vender tilbage ${promise}.${phone}\n\nVenlig hilsen\n${siteName}\n\n--\nDu får denne mail, fordi kontaktformularen på vores hjemmeside er udfyldt med din e-mailadresse. Var det ikke dig, kan du se bort fra den.`
+  };
+}
+
 export async function handleLead(req, env, deps = {}) {
   const fetchFn = deps.fetch || fetch;
   const now = (deps.now || Date.now)();
@@ -184,13 +197,17 @@ export async function handleLead(req, env, deps = {}) {
   // Sidste udvej: hele leadet i funktionsloggen (Netlify gemmer den kortvarigt), så det kan genskabes.
   if (!okLog && !okMail && !okCrm) { log('[lead] TABT-LEAD ' + JSON.stringify(lead)); return finish(json(502, { ok: false, error: 'levering', id: lead.id })); }
 
-  // Kvittering til den besøgende. Fejl her påvirker ikke svaret.
-  if (send && env.CONFIRM_TO_LEAD === 'true') {
-    later(send({
-      from, to: lead.email, 'h:Reply-To': env.LEAD_TO,
-      subject: `Tak for din henvendelse til ${siteName}`,
-      text: `Hej ${lead.navn}\n\nTak for din henvendelse. Vi har modtaget den og vender tilbage ${env.CONFIRM_PROMISE || 'hurtigst muligt'}.\n\nDin besked:\n${lead.beskrivelse}\n\nVenlig hilsen\n${siteName}`
-    }, SIDE_TIMEOUT_MS));
+  // Bekræftelse til den besøgende (standard slået til, CONFIRM_TO_LEAD=false slår fra). Fejl her påvirker ikke svaret.
+  // Sendes fra sit eget afsenderdomæne (CONFIRM_MAILGUN_DOMAIN + CONFIRM_FROM), så spamklager aldrig rammer leadmails til kunden.
+  // Sikkerhed: højst én pr. adresse pr. døgn, ingen links, og den besøgendes egen tekst gentages ikke (så formularen ikke kan bruges til spam).
+  const confirmDomain = env.CONFIRM_MAILGUN_DOMAIN || env.MAILGUN_DOMAIN;
+  if (env.CONFIRM_TO_LEAD !== 'false' && env.MAILGUN_API_KEY && confirmDomain) {
+    later((async () => {
+      if (deps.crm?.confirmOnce && !(await deps.crm.confirmOnce(lead.email, now))) return false;
+      const sendC = mailgun({ ...env, MAILGUN_DOMAIN: confirmDomain }, fetchFn);
+      const m = confirmMail(lead, siteName, env);
+      return sendC({ from: env.CONFIRM_FROM || `${siteName} <bekraeftelse@${confirmDomain}>`, to: lead.email, 'h:Reply-To': env.LEAD_TO, subject: m.subject, text: m.text, 'o:tag': 'bekraeftelse', 'o:tracking': 'no' }, SIDE_TIMEOUT_MS);
+    })());
   }
 
   if (wantsJson) return finish(json(200, { ok: true, id: lead.id }));

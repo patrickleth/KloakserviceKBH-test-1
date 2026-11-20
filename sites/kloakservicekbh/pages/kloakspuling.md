@@ -1,6 +1,7 @@
 ---
 type: service
 navLabel: Kloakspuling
+menuText: "Spuling af stoppede kloakker og serviceaftaler"
 title: "Kloakspuling | Få serviceaftale til dit hjem eller virksomhed"
 description: "Få professionel kloakspuling til private og virksomheder hos KloakServiceKbh. Undgå stoppet kloak og få en serviceaftale."
 h1: Vi tilbyder kloakspuling

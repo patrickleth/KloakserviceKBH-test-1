@@ -1,6 +1,7 @@
 ---
 type: service
 navLabel: Stoppet vask
+menuText: "Blokering fjernet i køkken og bad"
 title: "Har du en stoppet vask? Sådan løser du det"
 description: "En stoppet vask skyldes ofte madrester, fedt og sæbe, der samler sig i rørene. Vi fjerner blokeringen hurtigt og sørger for, at vandet igen løber frit i køkken eller bad."
 h1: "Har du en stoppet vask?"

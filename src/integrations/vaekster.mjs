@@ -98,6 +98,28 @@ export default function vaekster() {
           fs.writeFileSync(path.join(out, 'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>\n<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${maps.map(([name, list]) => `  <sitemap><loc>${site.domain}/${name}</loc><lastmod>${newest(list)}</lastmod></sitemap>`).join('\n')}\n</sitemapindex>\n`);
         }
 
+        // llms.txt: kort oversigt over virksomheden og de vigtigste sider til AI-assistenter (llmstxt.org-formatet).
+        // Bygges automatisk fra de samme sider som sitemappet. Koster intet, men giver ikke målbart flere AI-citater i dag.
+        {
+          const md = s => String(s || '').replace(/\s+/g, ' ').trim();
+          const entry = p => { const fm = fs.existsSync(srcFor(p.rel)) ? frontmatter(srcFor(p.rel)) : {}; return { ...p, fm, name: md(fm.navLabel || fm.h1 || p.title.split('|')[0]) }; };
+          const all = indexable.map(entry);
+          const line = e => `- [${e.name}](${site.domain}${e.rel})${e.fm.description ? `: ${md(e.fm.description)}` : ''}`;
+          const by = types => all.filter(e => types.includes(e.fm.type));
+          const posts = site.blog?.enabled === false ? [] : all.filter(e => isPost(e));
+          const parts = [
+            `# ${site.name}`,
+            `> ${md(site.footerAbout || site.personCta?.text || '')}`,
+            `## Kontakt\n- Telefon: ${site.phone.display}\n- E-mail: ${site.email}\n- Adresse: ${site.address.street}, ${site.address.postal} ${site.address.city}\n- CVR: ${site.cvr}${site.areaServed?.length ? `\n- Område: ${site.areaServed.join(', ')}` : ''}${site.phoneHours ? `\n- Åbningstider: ${md(site.phoneHours)}` : ''}`,
+            ['Ydelser', by(['service', 'pricing'])],
+            ['Områder', by(['city'])],
+            [site.blog?.label || 'Guides', posts],
+            ['Om virksomheden', by(['home', 'about', 'contact', 'job', 'quote'])],
+            ['Valgfrit', [...by(['legal']), { name: 'Sitemap', rel: '/sitemap.xml', fm: {} }]]
+          ].map(x => typeof x === 'string' ? x : x[1].length ? `## ${x[0]}\n${x[1].map(line).join('\n')}` : '').filter(Boolean);
+          fs.writeFileSync(path.join(out, 'llms.txt'), parts.join('\n\n') + '\n');
+        }
+
         // 4. _headers med CSP. Kun de domæner, kunden faktisk bruger.
         const usesGtm = !!site.tracking.gtmId;
         const usesPixel = !!site.tracking.metaPixelId;

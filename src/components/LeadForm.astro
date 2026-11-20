@@ -6,18 +6,28 @@
 import { site, abs, href, telHref, IS_TEST, TEST_FORM } from '../lib/site';
 import Img from './Img.astro';
 import FileField from './FileField.astro';
+import LineIcon from './LineIcon.astro';
 interface Props { slug: string; preselect?: string; title?: string; leadtype?: string; formId?: string; avatar?: boolean }
 const { slug, preselect, title = site.form.title, leadtype = 'formular', formId = 'tilbud', avatar = true } = Astro.props;
 const variant = site.form.variant;
 const first = site.contactPerson?.split(' ')[0];
-const person = avatar && site.brand.person;
+// Rundt billede over formularen (standard): portræt, ellers logo, ellers favicon, ellers et ikon i kundens farve.
+const person = site.brand.person;
+const logo = site.brand.logo || site.brand.favicon;
+const av = !avatar ? null : person ? { kind: 'photo', src: person.src, alt: person.alt } : logo ? { kind: 'logo', src: logo, alt: '' } : { kind: 'icon' };
 // "Hvor har du fundet os?": site.form.foundOptions (sæt til [] for at skjule feltet).
 const foundOptions: string[] = site.form.foundOptions ?? ['Google', 'AI (ChatGPT, Gemini etc.)', 'Facebook/Instagram', 'Trustpilot', 'Anbefaling fra andre', 'Besøgt/brugt jer før', 'Andet'];
 ---
-<form id={formId} class:list={['lead-form', 'form-card', `v-${variant}`]} action="/api/lead" method="post" enctype={site.form.files ? 'multipart/form-data' : undefined} data-test={IS_TEST && !TEST_FORM ? 'true' : 'false'} data-phone={site.phone.display} data-thanks={site.form.thankYou ? href(site.form.thankYou) : undefined} novalidate>
+<form id={formId} class:list={['lead-form', 'form-card', `v-${variant}`, { 'has-avatar': av }]} action="/api/lead" method="post" enctype={site.form.files ? 'multipart/form-data' : undefined} data-test={IS_TEST && !TEST_FORM ? 'true' : 'false'} data-phone={site.phone.display} data-thanks={site.form.thankYou ? href(site.form.thankYou) : undefined} novalidate>
+  {av && (
+    <div class:list={['form-avatar', `k-${av.kind}`]}>
+      {av.kind === 'photo' && <Img src={av.src} alt={av.alt} widths={[184]} sizes="92px" width={92} height={92} />}
+      {av.kind === 'logo' && <img src={av.src} alt="" width="92" height="92" loading="lazy" decoding="async" />}
+      {av.kind === 'icon' && <LineIcon name="chat" size={34} />}
+    </div>
+  )}
   <div class="form-head">
     <h2 class="form-title">{title}</h2>
-    {person && <Img class="avatar" src={person.src} alt={person.alt} widths={[128]} sizes="64px" width={64} height={64} />}
   </div>
 
   {variant === 'kort' ? (

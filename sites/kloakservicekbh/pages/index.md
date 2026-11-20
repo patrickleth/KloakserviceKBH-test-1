@@ -9,6 +9,14 @@ intro: >-
   Hos KloakServiceKbh er en aftale en aftale! Vi har +5000 glade kunder bag os.
 images:
   - { src: "https://kloakservicekbh.dk/wp-content/uploads/2026/07/KloakServiceKbh-9-komp.webp", alt: "Kloakmester fra KloakServiceKbh på opgave" }
+process:
+  heading: "Fra opkald til løst opgave"
+  lead: "En aftale er en aftale. Sådan foregår det, når du kontakter os."
+  steps:
+    - { title: "Ring eller skriv", text: "Ring på 51 400 490 eller send en besked. Akutte opgaver klares over telefonen, døgnet rundt.", icon: phone }
+    - { title: "Du får en fast pris", text: "Vi vurderer opgaven og giver dig et tilbud. Skriftlige henvendelser besvares inden for 2 timer*.", icon: tag }
+    - { title: "Vi løser opgaven", text: "En autoriseret kloakmester udfører arbejdet med det rette udstyr.", icon: wrench }
+    - { title: "Ingen skjulte gebyrer", text: "Du betaler den pris, vi har aftalt. Hverken mere eller mindre.", icon: shield }
 notes:
   - "H1 er kun firmanavnet 'KloakServiceKbh', som på den nuværende side. Overlinjen over H1 er 'Aut. Kloakmester' (ikke overført, skabelonen har ikke et eyebrow-felt til hero)."
   - "Forsiden har ingen USP-punkter under intro, derfor er usps udeladt (skabelonen bruger så site.badges)."

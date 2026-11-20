@@ -7,7 +7,8 @@ import fs from 'node:fs';
 
 const KUNDE = process.env.KUNDE || 'eksempel';
 
-const image = z.object({ src: z.string(), alt: z.string().default('') });
+// focus: hvilken del af billedet der skal blive synlig, når det beskæres (cover): top, bottom, left, right, center.
+const image = z.object({ src: z.string(), alt: z.string().default(''), focus: z.enum(['top', 'bottom', 'left', 'right', 'center']).optional() });
 
 const pages = defineCollection({
   loader: glob({ pattern: '**/*.md', base: `./sites/${KUNDE}/pages` }),
@@ -37,6 +38,7 @@ const pages = defineCollection({
     usps: z.array(z.string()).optional(),
     formTitle: z.string().optional(),
     menuText: z.string().optional(), // kort tekst under menupunktet i undermenuen
+    icon: z.string().optional(), // ikon i mega-menu og ydelseskort (navn fra LineIcon.astro). Uden: gættes ud fra adressen
     // Kort-blok: fx "Tre ting der har størst betydning for prisen"
     cards: z.object({ eyebrow: z.string().optional(), heading: z.string(), lead: z.string().optional(), items: z.array(z.object({ title: z.string(), text: z.string() })).min(2).max(6) }).optional(),
     // Ofte stillede spørgsmål (vises som harmonika og FAQPage-schema). Kan også skrives som ## Ofte stillede spørgsmål med ### pr. spørgsmål.
@@ -53,7 +55,7 @@ const pages = defineCollection({
       .optional()
       .default([]),
     // Forside
-    process: z.object({ heading: z.string(), lead: z.string(), steps: z.array(z.object({ title: z.string(), text: z.string() })), outro: z.string().optional() }).optional(),
+    process: z.object({ heading: z.string(), lead: z.string(), steps: z.array(z.object({ title: z.string(), text: z.string(), icon: z.string().optional() })), outro: z.string().optional() }).optional(),
     why: z.object({ heading: z.string(), body: z.array(z.string()) }).optional(),
     serviceCards: z.array(z.object({ slug: z.string(), title: z.string(), text: z.string() })).optional(),
     closing: z.object({ heading: z.string(), body: z.array(z.string()) }).optional(),

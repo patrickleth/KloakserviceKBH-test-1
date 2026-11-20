@@ -1,6 +1,7 @@
 ---
 type: service
 navLabel: Rottebekæmpelse
+menuText: "R1-autoriseret bekæmpelse af rotter"
 title: "Rottebekæmpelse du kan regne med | KloakServiceKbh"
 description: "Med mere end 25 års erfaring i rottebekæmpelse, har Miljøstyrelsen tilegnet os R1 autorisation og certificering. Læs hvordan vi kan hjælpe dig"
 h1: "Rottebekæmpelse på Sjælland"

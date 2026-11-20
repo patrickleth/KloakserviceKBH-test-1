@@ -1,6 +1,7 @@
 ---
 type: service
 navLabel: Strømpeforing
+menuText: "Renovering af kloakken indefra"
 title: "Hvad koster Strømpeforing af kloak, afløb & faldstammer?"
 description: "Prisen på strømpeforing ligger ca. på 1.000-2.000 kr. pr. meter kloakledning. Den konkrete pris kan dog variere en del."
 h1: "Strømpeforing af kloak, afløb & faldstammer"

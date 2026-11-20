@@ -8,7 +8,7 @@ const rows = (site.logoRows || []).filter((r: any) => r.logos?.length && r.secti
   <section class="partners" aria-label="Omtale og certificeringer">
     {rows.map((r: any) => (
       <div class="wrap logo-row">
-        <p class="eyebrow center">{r.heading}</p>
+        <h2 class="band-title">{r.heading}</h2>
         <ul>{r.logos.map((p: any) => <li class:list={['logo-tile', { dark: p.onDark }]}><img src={p.logo} alt={p.name} width="200" height="64" loading="lazy" decoding="async" /></li>)}</ul>
       </div>
     ))}

@@ -7,6 +7,7 @@ import Stats from '../components/Stats.astro';
 import ServiceGrid from '../components/ServiceGrid.astro';
 import Sections from '../components/Sections.astro';
 import Cards from '../components/Cards.astro';
+import Steps from '../components/Steps.astro';
 import PersonCta from '../components/PersonCta.astro';
 import LogoRows from '../components/LogoRows.astro';
 import LogoBand from '../components/LogoBand.astro';
@@ -56,7 +57,7 @@ const pctaImage = gallery.length > 1 ? gallery[gallery.length - 1] : undefined;
     </div></section>
   )}
 
-  {d.process && <Cards eyebrow="Sådan foregår det" heading={d.process.heading} lead={d.process.lead} items={d.process.steps} numbered />}
+  {d.process && <Steps eyebrow="Sådan foregår det" heading={d.process.heading} lead={d.process.lead} steps={d.process.steps} />}
   {d.cards && <Cards {...d.cards} />}
   <PersonCta {...(d.personCta || {})} image={pctaImage} />
   <Sections body={page.body} images={d.images} offset={1} />

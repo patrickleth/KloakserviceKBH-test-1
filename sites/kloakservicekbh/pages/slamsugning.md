@@ -1,6 +1,7 @@
 ---
 type: service
 navLabel: Slamsugning
+menuText: "Slamsuger ud til dig med det samme"
 title: "Slamsugning nær dig | Bestil akut tid her"
 description: "Døjer du med tilstoppet kloak, tyder det på, at der skal en slamsugning til. Lad os sende en slamsuger ud til dig med det samme."
 h1: "Slamsugning af kloakker"

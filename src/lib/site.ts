@@ -28,7 +28,10 @@ export function metaDescription(data: Page['data']): string {
 
 /** Hvilken menugruppe hører en side til (bruges til brødkrumme og "relaterede"). */
 export function groupOf(slug: string) {
-  return site.menu.find((m: any) => m.children?.includes(slug));
+  const m = site.menu.find((m: any) => m.children?.includes(slug));
+  // Mega-menu med grupper: den gruppe, siden ligger i (fx "Tilstopninger"), ikke hele menupunktet.
+  const g = m?.groups?.find((g: any) => g.children.includes(slug));
+  return g ? { label: g.label || m.label, children: g.children } : m;
 }
 
 export function crumbs(page: Page) {

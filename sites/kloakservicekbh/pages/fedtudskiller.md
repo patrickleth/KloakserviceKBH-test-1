@@ -1,6 +1,7 @@
 ---
 type: service
 navLabel: Fedtudskiller
+menuText: "Montering, tømning og service"
 title: "Fedtudskiller i København | Installation og service"
 description: "Professionel hjælp til fedtudskiller i København. Vi tilbyder montering, tømning og service for både private og erhverv. Kontakt os for tilbud."
 h1: "Effektiv fedtudskiller i København og omegn"

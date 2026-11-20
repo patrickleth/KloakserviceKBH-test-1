@@ -9,7 +9,7 @@ const dur = logos.length <= 5 ? 'd30' : logos.length <= 10 ? 'd50' : 'd75';
 ---
 {logos.length > 0 && (
   <section class="logo-band" aria-label={heading}>
-    <p class="eyebrow">{heading}</p>
+    <h2 class="band-title">{heading}</h2>
     <div class:list={['logo-marquee', dur]}>
       {[0, 1].map(copy => (
         <ul class="logo-track" aria-hidden={copy === 1 ? 'true' : undefined}>

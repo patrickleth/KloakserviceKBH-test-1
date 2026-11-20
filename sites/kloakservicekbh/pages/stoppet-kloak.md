@@ -1,6 +1,7 @@
 ---
 type: service
 navLabel: Stoppet kloak
+menuText: "Spuling og rensning ved tilstopning"
 title: "Har du en stoppet kloak? Bestil akut kloakservice"
 description: "En stoppet kloak kan føre til oversvømmelse og ubehagelig lugt, hvis den ikke håndteres hurtigt. Vi bruger professionelt udstyr til at spule og rense kloakken, så systemet fungerer optimalt igen."
 h1: "Har du en stoppet kloak?"

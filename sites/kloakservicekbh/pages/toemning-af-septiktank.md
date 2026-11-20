@@ -1,6 +1,7 @@
 ---
 type: service
 navLabel: Tømning af septiktank
+menuText: "Regelmæssig tømning mod lugt og stop"
 title: "Tømning af Septiktank | Prof. tømning og rensning | Ring nu"
 description: "Få forebygget tilstopning og lugtgener ved regelmæssig tømning af septiktank. Vi har over 25 års erfaring med tømning af septiktanke."
 h1: "Vi står for tømning af septiktank"

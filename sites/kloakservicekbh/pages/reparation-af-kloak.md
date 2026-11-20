@@ -1,6 +1,7 @@
 ---
 type: service
 navLabel: Reparation af kloak
+menuText: "Hurtig udkørsel og professionel løsning"
 title: "Reparation af kloak i København | Hurtig og effektiv hjælp"
 description: "Vi tilbyder reparation af kloak i København. Hurtig udkørsel og professionel løsning. Kontakt os for inspektion og tilbud."
 h1: "Hurtig reparation af kloak"

@@ -1,13 +1,19 @@
 ---
 // Sidens Markdown delt i sektioner (ved hver ##). Hver sektion har overskrift, brødtekst, knapper og billede.
-// Billede og tekst skifter side, og fordelingen varierer (50/50, 60/40, 40/60), så siden ikke bliver ensformig.
-// "## Overlinje | Overskrift" giver en lille overlinje over overskriften.
+// Variation, så siden ikke bliver ensformig:
+//   - "split": billede og tekst side om side. Siderne skifter, og fordelingen varierer (50/50, 60/40, 40/60).
+//     Billedet får samme højde som teksten (beskåret), på mobil fast 5:4.
+//   - "feature": hver fjerde sektion med billede bliver et bånd i fuld bredde med billedet bagved og teksten i et kort.
+//   - Punktlister i en sektion vises som kort med ikon.
+// To sektioner i træk har aldrig samme layout.
+// "## Overlinje | Overskrift" giver en lille overlinje over overskriften (kun sammen med en overskrift).
 // En sektion med overskriften "Ofte stillede spørgsmål" (eller FAQ) tages fra og vises som harmonika (se Faq.astro).
 import { splitSections, isFaqHeading } from '../lib/markdown';
 import { site, telHref } from '../lib/site';
+import { LINE_ICONS } from '../lib/icons';
 import Img from './Img.astro';
 import Icon from './Icon.astro';
-interface Props { body?: string; images?: { src: string; alt: string }[]; from?: number; to?: number; offset?: number; cta?: boolean; quoteHref?: string }
+interface Props { body?: string; images?: { src: string; alt: string; focus?: string }[]; from?: number; to?: number; offset?: number; cta?: boolean; quoteHref?: string }
 const { body, images = [], from = 0, to, offset = 0, cta = true, quoteHref = '#tilbud' } = Astro.props;
 const all = splitSections(body).filter(s => !isFaqHeading(s.heading));
 // Billeder: sidens egne først, så kundens galleri, så arbejdsbilledet. Genbruges i ring, hvis der er flere sektioner end billeder.
@@ -15,18 +21,31 @@ const seen = new Set<string>();
 const pics = [...images, ...(site.gallery || []), ...(site.brand.work ? [site.brand.work] : [])].filter(p => p && !seen.has(p.src) && seen.add(p.src));
 const ratios = ['r-50', 'r-60', 'r-50', 'r-40'];
 const sections = all.slice(from, to);
+// Punktlister med 2-8 korte punkter vises som kort med et flueben-ikon.
+const ICON = `<svg class="line-icon" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="${LINE_ICONS.check}"/></svg>`;
+function iconLists(html: string) {
+  return html.replace(/<ul>([\s\S]*?)<\/ul>/g, (whole, inner) => {
+    const items = inner.match(/<li>[\s\S]*?<\/li>/g) || [];
+    const short = items.length >= 2 && items.length <= 8 && items.every((li: string) => li.replace(/<[^>]+>/g, '').length <= 120);
+    if (!short) return whole;
+    return `<ul class="icon-list">${items.map((li: string) => li.replace(/^<li>/, `<li>${ICON}<span>`).replace(/<\/li>$/, '</span></li>')).join('')}</ul>`;
+  });
+}
 ---
 {sections.map((s, k) => {
   const i = from + k;
   const n = i + offset;
   const img = pics.length ? pics[i % pics.length] : null;
-  return (
-    <section class:list={['content-sec', { tinted: n % 2 === 1, flip: n % 2 === 1 }]}>
-      <div class:list={['wrap', img ? ['split', ratios[n % ratios.length]] : 'text-only']}>
-        <div class="sec-text">
-          {s.eyebrow && <p class="eyebrow">{s.eyebrow}</p>}
+  const feature = img && n % 4 === 3;
+  const html = iconLists(s.html);
+  return feature ? (
+    <section class:list={['feature-sec', { flip: n % 8 === 7 }]}>
+      <figure class="feature-bg"><Img src={img.src} alt={img.alt} focus={img.focus} sizes="100vw" widths={[800, 1280, 1920]} /></figure>
+      <div class="wrap">
+        <div class="feature-card reveal">
+          {s.eyebrow && s.heading && <p class="eyebrow">{s.eyebrow}</p>}
           {s.heading && <h2>{s.heading}</h2>}
-          <div class="prose-sec"><Fragment set:html={s.html} /></div>
+          <div class="prose-sec"><Fragment set:html={html} /></div>
           {cta && (
             <p class="sec-actions btn-pair">
               <a class="btn btn-pill btn-call" href={telHref} data-track="tel_click"><Icon name="phone" size={15} />{site.phone.display}</a>
@@ -34,7 +53,23 @@ const sections = all.slice(from, to);
             </p>
           )}
         </div>
-        {img && <figure class="sec-img"><Img src={img.src} alt={img.alt} sizes="(max-width: 860px) 100vw, 640px" /></figure>}
+      </div>
+    </section>
+  ) : (
+    <section class:list={['content-sec', { tinted: n % 2 === 1, flip: n % 2 === 1 }]}>
+      <div class:list={['wrap', img ? ['split', ratios[n % ratios.length]] : 'text-only']}>
+        <div class="sec-text reveal">
+          {s.eyebrow && s.heading && <p class="eyebrow">{s.eyebrow}</p>}
+          {s.heading && <h2>{s.heading}</h2>}
+          <div class="prose-sec"><Fragment set:html={html} /></div>
+          {cta && (
+            <p class="sec-actions btn-pair">
+              <a class="btn btn-pill btn-call" href={telHref} data-track="tel_click"><Icon name="phone" size={15} />{site.phone.display}</a>
+              <a class="btn btn-pill btn-cta" href={quoteHref}>Indhent tilbud</a>
+            </p>
+          )}
+        </div>
+        {img && <figure class="sec-img reveal"><Img src={img.src} alt={img.alt} focus={img.focus} sizes="(max-width: 860px) 100vw, 640px" /></figure>}
       </div>
     </section>
   );

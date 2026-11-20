@@ -1,6 +1,7 @@
 ---
 type: service
 navLabel: Faldstamme
+menuText: "Rensning af faldstammer, privat og erhverv"
 title: "Rensning af faldstammer | Rensning og servicetjek | Ring nu"
 description: "Er din faldstamme stoppet til med slam eller affaldsstoffer? Vi er eksperter i at hjælpe med rensning af faldstammer både privat & erhverv"
 h1: "Rensning af faldstammer"

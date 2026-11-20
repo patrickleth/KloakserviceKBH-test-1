@@ -1,6 +1,7 @@
 ---
 type: service
 navLabel: Omfangsdræn
+menuText: "Dræn mod fugt i kælder og sokkel"
 title: "Omfangsdræn i København | Fugt og drænering"
 description: "Fugt i kælderen? Vi etablerer og renoverer omfangsdræn i København. Effektiv drænering omkring soklen. Kontakt os i dag."
 h1: "Undgå fugt i soklen med omfangsdræn"

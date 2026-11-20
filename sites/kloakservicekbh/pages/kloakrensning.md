@@ -1,6 +1,7 @@
 ---
 type: service
 navLabel: Kloakrensning
+menuText: "Grundig rensning, der forebygger skader"
 title: "Kloakrensning | Ring nu og bestil et gratis tilbud"
 description: "Få professionel kloakrensning tilpasset dine behov hos KloakServiceKbh. Undgå alvorlige skader i fremtiden med os på sidelinjen."
 h1: "Kvalitets kloakrensning"

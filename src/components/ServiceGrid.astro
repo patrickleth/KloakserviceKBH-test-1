@@ -1,18 +1,22 @@
 ---
-// Ydelseskort til forsiden med baggrundsbillede, titel, kort tekst og "Læs mere".
+// Ydelseskort til forsiden med baggrundsbillede, ikon, titel, kort tekst og "Læs mere". Kortene glider ind ét ad gangen.
 import Icon from './Icon.astro';
 import Img from './Img.astro';
-import { href } from '../lib/site';
-interface Props { heading?: string; items: { slug: string; title: string; text: string; image?: { src: string; alt: string } }[] }
+import LineIcon from './LineIcon.astro';
+import { href, bySlug } from '../lib/site';
+import { iconFor } from '../lib/icons';
+interface Props { heading?: string; items: { slug: string; title: string; text: string; image?: { src: string; alt: string; focus?: string }; icon?: string }[] }
 const { heading = 'Vores ydelser', items } = Astro.props;
+const pages = await bySlug();
 ---
 {items.length > 0 && (
   <section class="services" aria-labelledby="ydelser-h"><div class="wrap">
-    <h2 id="ydelser-h" class="center">{heading}</h2>
-    <ul class="service-grid">
+    <h2 id="ydelser-h" class="center reveal">{heading}</h2>
+    <ul class="service-grid stagger reveal-group">
       {items.map(s => (
         <li><a class="service-card" href={href(s.slug)}>
-          {s.image && <Img class="service-bg" src={s.image.src} alt="" sizes="(max-width: 600px) 100vw, 400px" widths={[400, 640, 800]} />}
+          {s.image && <Img class="service-bg" src={s.image.src} alt="" focus={s.image.focus} sizes="(max-width: 600px) 100vw, 400px" widths={[400, 640, 800]} />}
+          <span class="service-ic"><LineIcon name={s.icon || pages[s.slug]?.data.icon || iconFor(s.slug, s.title)} size={22} /></span>
           <h3>{s.title}</h3>
           {s.text && <p>{s.text}</p>}
           <span class="more">Læs mere <Icon name="arrow" size={15} /></span>

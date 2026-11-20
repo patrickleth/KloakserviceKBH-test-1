@@ -316,6 +316,44 @@ await test('Ingen indholdssektion uden billede', async ({ page }) => {
   }
 });
 
+await test('Mega-menu åbner ved hover, viser ikon og tekst og lukker igen', async ({ page }) => {
+  await page.goto(base + '/');
+  await page.hover('[data-mega] summary');
+  await page.waitForTimeout(300);
+  assert.equal(await page.locator('[data-mega] details').evaluate(d => d.open), true, 'åbner ved hover');
+  const panel = await page.locator('.mega-panel').boundingBox();
+  assert.ok(panel.width >= 1270, 'panelet fylder hele bredden');
+  assert.ok(await page.locator('.mega-panel .mega-ic svg').count() >= 2, 'ikoner');
+  await page.hover('[data-mega-item] >> nth=1');
+  await page.waitForTimeout(500);
+  await page.mouse.move(640, 899);
+  await page.keyboard.press('Escape');
+  assert.equal(await page.locator('[data-mega] details').evaluate(d => d.open), false, 'lukker med Escape');
+});
+
+await test('Rundt billede over formularen og ingen overlinje uden overskrift', async ({ page }) => {
+  await page.goto(base + '/');
+  assert.ok(await page.locator('#tilbud .form-avatar').count() === 1, 'billede over kontaktformularen');
+  const lonely = await page.$$eval('.eyebrow', els => els.filter(e => !/^H[1-3]$/.test(e.nextElementSibling?.tagName || '')).map(e => e.textContent));
+  assert.deepEqual(lonely, []);
+});
+
+await test('Billeder i sektioner har samme højde som teksten på computer og 5:4 på mobil', async ({ page }) => {
+  await page.goto(base + '/terrasse/');
+  const r = await page.locator('.content-sec .split').first().evaluate(el => ({ img: el.querySelector('.sec-img').getBoundingClientRect().height, text: el.querySelector('.sec-text').getBoundingClientRect().height }));
+  assert.ok(r.img >= r.text - 2, `billede ${r.img} mod tekst ${r.text}`);
+  await page.setViewportSize({ width: 390, height: 844 });
+  const ratio = await page.locator('.sec-img img').first().evaluate(i => i.getBoundingClientRect().width / i.getBoundingClientRect().height);
+  assert.ok(Math.abs(ratio - 1.25) < 0.03, 'mobil 5:4, fik ' + ratio);
+});
+
+await test('llms.txt bygges med kontakt og ydelser', async () => {
+  const t = fs.readFileSync(path.join(root, 'llms.txt'), 'utf8');
+  assert.match(t, /^# /);
+  assert.match(t, /## Kontakt/);
+  assert.match(t, /## Ydelser/);
+});
+
 await test('CRM: login, board, liste, autosave og noter uden at lukke arket', async ({ page }) => {
   let alerted = false; page.on('dialog', d => { alerted = true; d.dismiss(); });
   await page.goto(base + '/administrator-system/');

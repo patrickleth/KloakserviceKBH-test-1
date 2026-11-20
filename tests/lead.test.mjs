@@ -1,10 +1,11 @@
 // Kør: npm run test:lead
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { handleLead } from '../netlify/lib/lead-core.mjs';
+import { handleLead, confirmMail } from '../netlify/lib/lead-core.mjs';
+import { crmStore } from '../netlify/lib/crm-core.mjs';
 
 const NOW = 1_800_000_000_000;
-const env = { BRAND_NAME: 'Testfirma', MAKE_WEBHOOK_URL: 'https://hook.eu1.make.com/x', MAILGUN_API_KEY: 'k', MAILGUN_DOMAIN: 'mg.example.dk', LEAD_TO: 'kunde@example.dk', ALERT_EMAIL: 'alarm@example.dk' };
+const env = { BRAND_NAME: 'Testfirma', MAKE_WEBHOOK_URL: 'https://hook.eu1.make.com/x', MAILGUN_API_KEY: 'k', MAILGUN_DOMAIN: 'mg.example.dk', LEAD_TO: 'kunde@example.dk', ALERT_EMAIL: 'alarm@example.dk', CONFIRM_TO_LEAD: 'false' };
 const good = { navn: 'Jens Hansen', telefon: '12 34 56 78', email: 'jens@example.dk', beskrivelse: 'Ny terrasse på 30 m2', ydelser: ['Terrasse'], side: 'https://example.dk/terrasse/', leadtype: 'formular', gclid: 'abc', t: '20000' };
 
 function fakeFetch(plan = {}) {
@@ -173,4 +174,47 @@ test('uden JavaScript sendes man videre til takkesiden', async () => {
   const r = await handleLead(new Request('https://example.dk/api/lead', { method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded' }, body }), env, { fetch: fakeFetch(), now: () => NOW, log: () => {} });
   assert.equal(r.status, 303);
   assert.equal(r.headers.get('location'), '/henvendelse/');
+});
+
+// ---------- Bekræftelse til den besøgende ----------
+function memStore() {
+  const m = new Map();
+  return {
+    get: async (k) => m.has(k) ? JSON.parse(m.get(k)) : null,
+    setJSON: async (k, v) => { m.set(k, JSON.stringify(v)); },
+    set: async (k, v) => { m.set(k, JSON.stringify(null)); },
+    list: async () => ({ blobs: [] }), delete: async k => m.delete(k)
+  };
+}
+
+test('bekræftelse sendes som standard fra eget afsenderdomæne, uden den besøgendes tekst', async () => {
+  const f = fakeFetch();
+  const { CONFIRM_TO_LEAD, ...on } = env;
+  const r = await handleLead(req(good), { ...on, CONFIRM_MAILGUN_DOMAIN: 'b.indsendelse.dk', CONFIRM_FROM: 'Testfirma <bekraeftelse@b.indsendelse.dk>', CONFIRM_PHONE: '12 34 56 78' }, { fetch: f, now: () => NOW, log: () => {} });
+  assert.equal(r.status, 200);
+  const c = f.calls.find(c => c.url.includes('mailgun') && c.init.body.get('to') === 'jens@example.dk');
+  assert.ok(c, 'bekræftelsen blev sendt');
+  assert.match(c.url, /b\.indsendelse\.dk/);
+  assert.equal(c.init.body.get('from'), 'Testfirma <bekraeftelse@b.indsendelse.dk>');
+  assert.doesNotMatch(c.init.body.get('text'), /terrasse/i);
+  assert.match(c.init.body.get('text'), /12 34 56 78/);
+});
+
+test('bekræftelse: navn der ligner et link bruges ikke', () => {
+  assert.match(confirmMail({ navn: 'Jens Hansen' }, 'X').text, /^Hej Jens\n/);
+  assert.match(confirmMail({ navn: 'Vind nu på www.spam.dk' }, 'X').text, /^Hej\n/);
+  assert.match(confirmMail({ navn: 'https://x.io' }, 'X').text, /^Hej\n/);
+});
+
+test('bekræftelse: højst én pr. adresse pr. døgn', async () => {
+  const crm = crmStore(memStore());
+  assert.equal(await crm.confirmOnce('Jens@Example.dk', NOW), true);
+  assert.equal(await crm.confirmOnce('jens@example.dk', NOW + 1000), false);
+  assert.equal(await crm.confirmOnce('jens@example.dk', NOW + 25 * 3600 * 1000), true);
+});
+
+test('bekræftelse kan slås fra pr. kunde', async () => {
+  const f = fakeFetch();
+  await handleLead(req(good), { ...env, CONFIRM_TO_LEAD: 'false' }, { fetch: f, now: () => NOW, log: () => {} });
+  assert.equal(f.calls.filter(c => c.url.includes('mailgun') && c.init.body.get('to') === 'jens@example.dk').length, 0);
 });

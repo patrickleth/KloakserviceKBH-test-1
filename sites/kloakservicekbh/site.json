@@ -314,36 +314,42 @@
   },
   "menu": [
     {
-      "label": "Ydelser",
-      "children": [
-        "kloakservice",
-        "kloakspuling",
-        "kloakrensning",
-        "kloakrenovering",
-        "hoejtryksspuling",
-        "hoejvandslukke",
-        "faldstamme",
-        "faskine",
-        "fedtudskiller",
-        "omfangsdraen",
-        "rodskaering",
-        "rottebekaempelse",
-        "intelligent-rottefaelde",
-        "reparation-af-kloak",
-        "slamsugning",
-        "stroempeforing-af-kloak-pris",
-        "tv-inspektion",
-        "toemning-af-olietank",
-        "toemning-af-septiktank"
-      ]
-    },
-    {
-      "label": "Tilstopninger",
-      "children": [
-        "stoppet-afloeb",
-        "stoppet-toilet",
-        "stoppet-vask",
-        "stoppet-kloak"
+      "label": "Vi tilbyder",
+      "mega": true,
+      "groups": [
+        {
+          "label": "Ydelser",
+          "children": [
+            "kloakservice",
+            "kloakspuling",
+            "kloakrensning",
+            "kloakrenovering",
+            "hoejtryksspuling",
+            "hoejvandslukke",
+            "faldstamme",
+            "faskine",
+            "fedtudskiller",
+            "omfangsdraen",
+            "rodskaering",
+            "rottebekaempelse",
+            "intelligent-rottefaelde",
+            "reparation-af-kloak",
+            "slamsugning",
+            "stroempeforing-af-kloak-pris",
+            "tv-inspektion",
+            "toemning-af-olietank",
+            "toemning-af-septiktank"
+          ]
+        },
+        {
+          "label": "Tilstopninger",
+          "children": [
+            "stoppet-afloeb",
+            "stoppet-toilet",
+            "stoppet-vask",
+            "stoppet-kloak"
+          ]
+        }
       ]
     },
     {
@@ -423,6 +429,11 @@
     ]
   },
   "blog": {
-    "permalink": "root"
+    "permalink": "root",
+    "enabled": true
+  },
+  "megaAside": {
+    "heading": "Akut kloakproblem?",
+    "text": "Vi har døgnvagt alle dage, også weekender og helligdage. Ring, så rykker vi ud."
   }
 }

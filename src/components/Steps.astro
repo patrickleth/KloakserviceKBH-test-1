@@ -1,0 +1,26 @@
+---
+// "Sådan foregår det": trin med ikon og nummer på en stiplet linje (lodret på mobil).
+import LineIcon from './LineIcon.astro';
+import { iconFor } from '../lib/icons';
+interface Props { eyebrow?: string; heading: string; lead?: string; steps: { title: string; text: string; icon?: string }[] }
+const { eyebrow, heading, lead, steps } = Astro.props;
+const fallback = ['phone', 'tag', 'wrench', 'check'];
+---
+<section class="steps-sec" aria-labelledby="trin-h">
+  <div class="wrap">
+    <div class="reveal">
+      {eyebrow && <p class="eyebrow center">{eyebrow}</p>}
+      <h2 id="trin-h" class="center">{heading}</h2>
+      {lead && <p class="lead center">{lead}</p>}
+    </div>
+    <ol class="steps stagger reveal-group">
+      {steps.map((s, i) => (
+        <li>
+          <span class="step-ic"><LineIcon name={s.icon || (iconFor(s.title) !== 'check' ? iconFor(s.title) : fallback[i % fallback.length])} size={26} /></span>
+          <h3>{s.title}</h3>
+          <p>{s.text}</p>
+        </li>
+      ))}
+    </ol>
+  </div>
+</section>

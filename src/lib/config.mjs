@@ -53,6 +53,11 @@ export function loadSite() {
   // Blogindlæggenes adresse: 'blog' = /blog/<slug>/ (nye kunder), 'root' = /<slug>/ som i WordPress (behold eksisterende URL'er ved flytning).
   site.blog ??= {};
   site.blog.permalink ??= 'blog';
+  // Blog/guides er kun for SEO-kunder: "blog": { "enabled": false } slår ruter, menupunkt og llms.txt-afsnit fra.
+  site.blog.enabled ??= true;
+  site.blog.label ??= 'Blog';
+  // Menupunkter med grupper (mega-menu) får også en samlet children-liste, så sidefod, ydelseskort m.m. virker uændret.
+  for (const m of site.menu || []) if (m.groups && !m.children) m.children = m.groups.flatMap(g => g.children);
   return site;
 }
 
@@ -119,6 +124,7 @@ export function postPath(id, site = loadSite()) {
 }
 
 export function hasBlog() {
+  if (loadSite().blog?.enabled === false) return false;
   const dir = path.join(SITE_DIR, 'blog');
   if (!fs.existsSync(dir)) return false;
   return fs.readdirSync(dir).some(f => f.endsWith('.md') && !/^draft:\s*true\s*$/m.test(fs.readFileSync(path.join(dir, f), 'utf8').split(/^---\s*$/m)[1] || ''));

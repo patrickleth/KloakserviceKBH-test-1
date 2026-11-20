@@ -1,6 +1,7 @@
 ---
 type: service
 navLabel: Kloakrenovering
+menuText: "Moderne metoder med minimal gene"
 title: "Kloakrenovering i København | Effektive løsninger uden opgravning"
 description: "Vi tilbyder kloakrenovering i København med moderne metoder og minimal gene. Kontakt os i dag for inspektion og tilbud."
 h1: "Kloakrenovering uden unødige gener"

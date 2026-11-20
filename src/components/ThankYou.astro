@@ -36,7 +36,7 @@ const services = (site.menu.find((m: any) => m.children)?.children || []).filter
         {r && <Stars rating={r.score} label={r.count ? `${String(r.score).replace('.', ',')} i gennemsnit fra ${r.count} anmeldelser` : r.source} />}
       </div>
       <aside class="urgent-box">
-        <p class="eyebrow">Haster det?</p>
+        <h3>Haster det?</h3>
         <p>Ring direkte, så hjælper vi dig med det samme.</p>
         <a class="btn btn-pill btn-call btn-block" href={telHref} data-track="tel_click"><Icon name="phone" size={16} />{site.phone.display}</a>
         {site.phoneHours && <p class="small">{site.phoneHours}</p>}

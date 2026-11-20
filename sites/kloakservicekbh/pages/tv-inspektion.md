@@ -1,6 +1,7 @@
 ---
 type: service
 navLabel: Tv-inspektion
+menuText: "Kamera viser kloakkens præcise tilstand"
 title: "TV Inspektion I En innovativ kloakløsning"
 description: "Har du mistanke om problemer eller skader i kloakken? Hos KloakServiceKbh tilbyder vi TV Inspektion for at klarlægge kloakkens tilstand."
 h1: "Vi tilbyder TV inspektion"
