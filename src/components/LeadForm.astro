@@ -7,13 +7,15 @@ import { site, abs, href, telHref, IS_TEST, TEST_FORM } from '../lib/site';
 import Img from './Img.astro';
 import FileField from './FileField.astro';
 import LineIcon from './LineIcon.astro';
+import { logoImg } from '../lib/logo';
 interface Props { slug: string; preselect?: string; title?: string; leadtype?: string; formId?: string; avatar?: boolean }
 const { slug, preselect, title = site.form.title, leadtype = 'formular', formId = 'tilbud', avatar = true } = Astro.props;
 const variant = site.form.variant;
 const first = site.contactPerson?.split(' ')[0];
 // Rundt billede over formularen (standard): portræt, ellers logo, ellers favicon, ellers et ikon i kundens farve.
 const person = site.brand.person;
-const logo = site.brand.logo || site.brand.favicon;
+const logoRaw = site.brand.logo || site.brand.favicon;
+const logo = logoRaw ? (await logoImg(logoRaw, 46))?.src : undefined;
 const av = !avatar ? null : person ? { kind: 'photo', src: person.src, alt: person.alt } : logo ? { kind: 'logo', src: logo, alt: '' } : { kind: 'icon' };
 // "Hvor har du fundet os?": site.form.foundOptions (sæt til [] for at skjule feltet).
 const foundOptions: string[] = site.form.foundOptions ?? ['Google', 'AI (ChatGPT, Gemini etc.)', 'Facebook/Instagram', 'Trustpilot', 'Anbefaling fra andre', 'Besøgt/brugt jer før', 'Andet'];

@@ -2,14 +2,16 @@
 // Rækker med logoer: "Som nævnt i", certificeringer m.m. fra site.logoRows.
 // Samarbejdspartnere (site.partners) vises i det bevægende bånd under hero (LogoBand.astro).
 import { site } from '../lib/site';
-const rows = (site.logoRows || []).filter((r: any) => r.logos?.length && r.section !== false);
+const base = (site.logoRows || []).filter((r: any) => r.logos?.length && r.section !== false);
+import { logoImg } from '../lib/logo';
+const rows = await Promise.all(base.map(async (r: any) => ({ ...r, logos: await Promise.all(r.logos.map(async (p: any) => ({ ...p, img: await logoImg(p.logo, 64, 200) }))) })));
 ---
 {rows.length > 0 && (
   <section class="partners" aria-label="Omtale og certificeringer">
     {rows.map((r: any) => (
       <div class="wrap logo-row">
         <h2 class="band-title">{r.heading}</h2>
-        <ul>{r.logos.map((p: any) => <li class:list={['logo-tile', { dark: p.onDark }]}><img src={p.logo} alt={p.name} width="200" height="64" loading="lazy" decoding="async" /></li>)}</ul>
+        <ul>{r.logos.map((p: any) => <li class:list={['logo-tile', { dark: p.onDark }]}><img src={p.img?.src || p.logo} alt={p.name} width={p.img?.width} height={p.img?.height || 64} loading="lazy" decoding="async" /></li>)}</ul>
       </div>
     ))}
   </section>

@@ -6,6 +6,8 @@ interface Props { heading?: string }
 const { heading = 'Vi samarbejder med' } = Astro.props;
 const logos = (site.partners || []).filter((p: any) => p.logo);
 const dur = logos.length <= 5 ? 'd30' : logos.length <= 10 ? 'd50' : 'd75';
+import { logoImg } from '../lib/logo';
+const fitted = await Promise.all(logos.map(async (p: any) => ({ ...p, img: await logoImg(p.logo, 64, 200) })));
 ---
 {logos.length > 0 && (
   <section class="logo-band" aria-label={heading}>
@@ -13,7 +15,7 @@ const dur = logos.length <= 5 ? 'd30' : logos.length <= 10 ? 'd50' : 'd75';
     <div class:list={['logo-marquee', dur]}>
       {[0, 1].map(copy => (
         <ul class="logo-track" aria-hidden={copy === 1 ? 'true' : undefined}>
-          {logos.map((p: any) => <li class:list={['logo-tile', { dark: p.onDark }]}><img src={p.logo} alt={copy === 1 ? '' : p.name} width="200" height="64" loading="lazy" decoding="async" /></li>)}
+          {fitted.map((p: any) => <li class:list={['logo-tile', { dark: p.onDark }]}><img src={p.img?.src || p.logo} alt={copy === 1 ? '' : p.name} width={p.img?.width} height={p.img?.height || 64} loading="lazy" decoding="async" /></li>)}
         </ul>
       ))}
     </div>

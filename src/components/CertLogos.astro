@@ -7,10 +7,12 @@ const { variant } = Astro.props;
 const rows = (site.logoRows || []).filter((r: any) => r[variant] && r.logos?.length);
 const logos = rows.flatMap((r: any) => r.logos);
 const label = rows[0]?.heading;
+import { logoImg } from '../lib/logo';
+const fitted = await Promise.all(logos.map(async (l: any) => ({ ...l, img: await logoImg(l.logo, 40, 130) })));
 ---
 {logos.length > 0 && (
   <div class:list={['cert-logos', `cert-${variant}`]}>
     {label && <p class="cert-label">{label}</p>}
-    <ul>{logos.map((l: any) => <li class:list={['cert-tile', { dark: l.onDark }]}><img src={l.logo} alt={l.name} width="120" height="44" loading={variant === 'hero' ? 'eager' : 'lazy'} decoding="async" /></li>)}</ul>
+    <ul>{fitted.map((l: any) => <li class:list={['cert-tile', { dark: l.onDark }]}><img src={l.img?.src || l.logo} alt={l.name} width={l.img?.width} height={l.img?.height || 40} loading={variant === 'hero' ? 'eager' : 'lazy'} decoding="async" /></li>)}</ul>
   </div>
 )}

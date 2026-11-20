@@ -13,11 +13,13 @@ const legalTypes = ['legal'];
 const legal = Object.values(pages).filter((p: any) => legalTypes.includes(p.data.type)).map((p: any) => p.id);
 const company = site.footerLinks.filter((s: string) => has(s) && !legal.includes(s) && !cities.includes(s) && !services.includes(s));
 const hasBlog = Astro.props.hasBlog;
+import { logoImg } from '../lib/logo';
+const footLogo = await logoImg(site.brand.logo, 50);
 ---
 <footer class="site-footer">
   <div class="wrap foot-grid">
     <div class="foot-brand">
-      <img class="foot-logo" src={site.brand.logo} alt={site.name} width="160" height="50" loading="lazy" />
+      {footLogo && <img class="foot-logo" src={footLogo.src} alt={site.name} width={footLogo.width} height={footLogo.height} loading="lazy" />}
       {site.footerAbout && <p>{site.footerAbout}</p>}
       <p>CVR: {site.cvr}</p>
     </div>

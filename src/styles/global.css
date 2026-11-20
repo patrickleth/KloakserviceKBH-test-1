@@ -694,3 +694,8 @@ img.f-center { object-position: 50% 50%; }
 .sec-img { box-shadow: var(--shadow); }
 .sec-img img { box-shadow: none; border-radius: 0; }
 .urgent-box h3 { font-size: 1.05rem; margin: 0 0 .4em; }
+
+/* Logoer følger deres egne proportioner (width/height sættes ved bygning), aldrig strakt. */
+.logo-tile img { width: auto; height: auto; max-height: 64px; max-width: 200px; }
+.cert-tile img { width: auto; height: auto; max-height: 40px; max-width: 130px; }
+@media (max-width: 600px) { .cert-tile img { max-height: 34px; max-width: 104px; } .logo-tile img { max-height: 52px; max-width: 160px; } }

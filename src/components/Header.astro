@@ -12,6 +12,7 @@ import { resolveImage, remoteOptimizable } from '../lib/images';
 import { iconFor } from '../lib/icons';
 import Icon from './Icon.astro';
 import LineIcon from './LineIcon.astro';
+import { logoImg } from '../lib/logo';
 interface Props { current?: string; minimal?: boolean; overHero?: boolean }
 const { current = '', minimal = false, overHero = false } = Astro.props;
 const pages = await bySlug();
@@ -52,6 +53,8 @@ const menu = await Promise.all(site.menu.map(async (m: any, idx: number) => {
 }));
 const blogOff = site.blog?.enabled === false;
 const fallbackImg = await smallSrc(gallery[0]?.src || site.brand.work?.src || site.brand.hero?.src);
+const logo = await logoImg(site.brand.logo, 52);
+const logoLight = site.brand.logoLight ? await logoImg(site.brand.logoLight, 52) : logo;
 const aside = site.megaAside || { heading: 'Haster det?', text: site.phoneHours || 'Ring, så hjælper vi dig med det samme.' };
 ---
 {IS_TEST && <div class="testbar">Testversion bygget af Vækster. Siden indekseres ikke af Google{TEST_FORM ? ', og henvendelser lander kun i CRM\'et.' : ', og formularen sender ikke noget.'}</div>}
@@ -59,8 +62,8 @@ const aside = site.megaAside || { heading: 'Haster det?', text: site.phoneHours 
 <header class:list={['site-header', { 'over-hero': overHero, 'no-nav': minimal }]} data-header>
   <div class="wrap header-row">
     <a class="logo" href="/" aria-label={`${site.name}, til forsiden`}>
-      <img class="logo-dark" src={site.brand.logo} alt="" width="180" height="56" />
-      {overHero && <img class="logo-light" src={site.brand.logoLight || site.brand.logo} alt="" width="180" height="56" data-invert={site.brand.logoLight ? undefined : 'true'} />}
+      {logo && <img class="logo-dark" src={logo.src} alt="" width={logo.width} height={logo.height} />}
+      {overHero && logoLight && <img class="logo-light" src={logoLight.src} alt="" width={logoLight.width} height={logoLight.height} data-invert={site.brand.logoLight ? undefined : 'true'} />}
     </a>
     {!minimal && (
       <nav class="main-nav" aria-label="Hovedmenu">
