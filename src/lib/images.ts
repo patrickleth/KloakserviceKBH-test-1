@@ -2,6 +2,7 @@
 // Lokale billeder optimeres ved bygning til AVIF/WebP i flere størrelser.
 // Fjern-URL'er (typisk den gamle WordPress-side under migrering) vises som de er.
 import type { ImageMetadata } from 'astro';
+import { getImage, inferRemoteSize } from 'astro:assets';
 import { KUNDE, REMOTE_OPT, loadSite } from './config.mjs';
 
 const OWN_HOST = new URL(loadSite().domain).hostname.replace(/^www\./, '');
@@ -33,4 +34,20 @@ export function publicUrl(src: string | undefined, domain: string): string | und
   if (src.startsWith('/')) return domain + src;
   const img = resolveImage(src);
   return img && typeof img !== 'string' ? domain + img.src : undefined;
+}
+
+// Fjernbillede i ny størrelse med bevarede proportioner. Astros getImage med inferSize beholder ellers
+// den originale bredde eller højde, når kun den ene angives, og så bliver billedet klemt.
+// Derfor læses de originale mål først, og begge mål sendes med.
+const sizeCache = new Map<string, Promise<{ width: number; height: number }>>();
+export async function remoteResized(src: string, want: { width?: number; height?: number }, format = 'webp') {
+  if (!sizeCache.has(src)) sizeCache.set(src, inferRemoteSize(src).then((m) => ({ width: m.width, height: m.height })));
+  const o = await sizeCache.get(src)!;
+  let width = want.width, height = want.height;
+  if (width && !height) height = Math.round((o.height * width) / o.width);
+  else if (height && !width) width = Math.round((o.width * height) / o.height);
+  // Aldrig større end originalen.
+  if (width! > o.width) { height = Math.round((height! * o.width) / width!); width = o.width; }
+  const img = await getImage({ src, width, height, format: format as any });
+  return { src: img.src, width: width!, height: height! };
 }
