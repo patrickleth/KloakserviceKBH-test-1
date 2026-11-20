@@ -10,11 +10,11 @@ import { parseUsers, verifyPassword, hashPassword, signSession, readSession, get
 
 // Standard-stages. Kan tilpasses i CRM'et (gemmes i config/stages). "arkiveret" findes altid og vises ikke på boardet.
 export const DEFAULT_STAGES = [
-  { id: 'ny', navn: 'Ny', farve: '#87909e' },
-  { id: 'kontaktet', navn: 'Kontaktet', farve: '#1090e0' },
-  { id: 'tilbud', navn: 'Tilbud sendt', farve: '#8b5cf6' },
-  { id: 'vundet', navn: 'Vundet', farve: '#0f9d58' },
-  { id: 'tabt', navn: 'Tabt', farve: '#d33d44' }
+  { id: 'ny', navn: 'Ny', farve: '#0a84ff' },
+  { id: 'kontaktet', navn: 'Kontaktet', farve: '#ff9f0a' },
+  { id: 'tilbud', navn: 'Tilbud sendt', farve: '#bf5af2' },
+  { id: 'vundet', navn: 'Vundet', farve: '#30d158' },
+  { id: 'tabt', navn: 'Tabt', farve: '#8e8e93' }
 ];
 export const STATUSES = [...DEFAULT_STAGES.map(s => s.id), 'arkiveret'];
 const PRIORITIES = ['', 'haster', 'hoej', 'normal', 'lav'];

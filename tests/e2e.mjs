@@ -316,35 +316,42 @@ await test('Ingen indholdssektion uden billede', async ({ page }) => {
   }
 });
 
-await test('CRM: login, board, liste, autosave og noter uden at lukke vinduet', async ({ page }) => {
+await test('CRM: login, board, liste, autosave og noter uden at lukke arket', async ({ page }) => {
   let alerted = false; page.on('dialog', d => { alerted = true; d.dismiss(); });
   await page.goto(base + '/administrator-system/');
   assert.equal(await page.getAttribute('meta[name=robots]', 'content'), 'noindex, nofollow');
   await page.waitForSelector('[data-login]');
   await page.fill('[data-login] [name=bruger]', 'test'); await page.fill('[data-login] [name=kode]', 'hemmelig-kode-123');
   await page.click('[data-login] button[type=submit]');
-  await page.waitForSelector('.lcard');
-  assert.equal(await page.locator('[data-col=ny] .lcard').count(), 1);
-  assert.match(await page.textContent('.lcard .lc-name'), /<img/);
+  await page.waitForSelector('.kcard');
+  assert.match(await page.textContent('.kcard .k-name'), /<img/);
   assert.equal(alerted, false);
-  // åbn, skift status (autosave), skriv note og send, vinduet forbliver åbent
-  await page.click('.lcard');
-  await page.selectOption('.task .status-sel', 'kontaktet');
-  await page.waitForSelector('.task .saved.st-saved');
-  await page.fill('.task .note-input', 'Ringet op');
-  await page.click('.task .composer button');
-  await page.waitForSelector('.task .act.note');
-  assert.ok(await page.isVisible('.task'), 'vinduet skal blive åbent efter gem og note');
-  await page.click('.task .x');
-  await page.waitForSelector('[data-col=kontaktet] .lcard');
-  // nyt lead kan lukkes uden navn
+  await page.click('.kcard');
+  await page.selectOption('.sheet .status-select', 'kontaktet');
+  await page.waitForSelector('.sheet .saved.s-saved');
+  await page.fill('.sheet .composer-input', 'Ringet op');
+  await page.click('.sheet .send');
+  await page.waitForSelector('.sheet .f-note');
+  assert.ok(await page.isVisible('.sheet[data-task]'), 'arket skal blive åbent efter gem og note');
+  await page.click('.sheet .sheet-bar .bar-btn');
+  await page.waitForSelector('.sheet[data-task]', { state: 'hidden' });
+  // nyt lead kan annulleres uden navn
   await page.click('[data-new]');
-  await page.click('.task .x');
-  assert.ok(!(await page.isVisible('.task')));
-  // listevisning
-  await page.click('.tab >> text=Liste');
-  await page.waitForSelector('.list .row:not(.head)');
+  await page.click('.sheet .sheet-bar .bar-btn');
+  await page.waitForSelector('.sheet[data-task]', { state: 'hidden' });
+  await page.click('[data-mode=list]');
+  await page.waitForSelector('.row');
 });
+
+await test('CRM på mobil: chips, plusknap og liste', async ({ page }) => {
+  await page.goto(base + '/administrator-system/');
+  await page.fill('[data-login] [name=bruger]', 'test'); await page.fill('[data-login] [name=kode]', 'hemmelig-kode-123');
+  await page.click('[data-login] button[type=submit]');
+  await page.waitForSelector('.row');
+  assert.ok(await page.isVisible('[data-new-fab]'));
+  assert.ok(await page.isVisible('[data-chips] .chip'));
+  assert.ok(!(await page.isVisible('[data-sidebar] .sb-brand')) || (await page.locator('[data-sidebar]').boundingBox()).x < 0);
+}, { mobile: true });
 
 await test('Landingsside: noindex, ingen menu og fast ring-knap på mobil', async ({ page }) => {
   await page.goto(base + '/lp/terrasse-tilbud/');

@@ -127,7 +127,7 @@ Fejler en af dem, går leadet stadig igennem, og der sendes alarm. Fejler alle, 
 
 Alle kunder får et lille CRM på en skjult adresse: `https://<kundens-domæne>/administrator-system/`.
 
-- **Board som Trello:** kolonnerne Nye, Kontaktet, Tilbud sendt, Vundet og Tabt (plus arkiverede). Kort flyttes med træk og slip eller via status i detaljevinduet (mobil).
+- **Design:** neutralt og ens for alle kunder (ikke kundens branding), mobil først og Apple-inspireret. Liste og board, smarte lister (Alle, Opfølgning, Tildelt mig, Arkiveret), stages med egne navne og farver, gemte visninger, filtre og sortering. Næste opfølgning er rød ved overskredet, orangegul i dag. Alt gemmes automatisk.
 - **Alle formularhenvendelser lander her automatisk** med side, UTM/gclid/fbclid og vedhæftede filer. Manuelle leads (fx telefonopkald) oprettes med "+ Nyt lead".
 - **Detaljevindue:** ring/mail-knapper, alle felter kan rettes, værdi i kr., ansvarlig, noter med navn og tid, historik over ændringer.
 - **Overblik:** nye henvendelser, leads denne måned, værdi af åbne tilbud og vundet denne måned. Søgning på navn, telefon, adresse og opgave.
