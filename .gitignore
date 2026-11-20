@@ -7,3 +7,7 @@ src/styles/_tokens.css
 .env.*
 .netlify/
 skaermbilleder/
+
+# Cloudflare lokalt
+.dev.vars
+.wrangler/

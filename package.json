@@ -30,7 +30,8 @@
     "turndown": "^7.2.5"
   },
   "devDependencies": {
-    "playwright": "^1.65.1"
+    "playwright": "^1.65.1",
+    "wrangler": "^4.166.0"
   },
   "overrides": {
     "picomatch": "^4.0.7"

@@ -66,6 +66,7 @@ export function crmStore(store) {
       return rec;
     },
     async list() {
+      if (store.listJSON) return (await store.listJSON('lead/')).filter(Boolean).sort((a, b) => String(b.oprettet).localeCompare(String(a.oprettet)));
       const { blobs } = await store.list({ prefix: 'lead/' });
       const all = await Promise.all(blobs.map(b => store.get(b.key, { type: 'json' })));
       return all.filter(Boolean).sort((a, b) => String(b.oprettet).localeCompare(String(a.oprettet)));

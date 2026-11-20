@@ -1,0 +1,36 @@
+// Cloudflare-opsætning for én kundes side. Bygges af Cloudflare Workers Builds ved hvert push til GitHub.
+// Byggekommando (sættes i Cloudflare): KUNDE=kloakservicekbh MODE=test TEST_FORM=true npm run build
+// Hemmeligheder (ADMIN_USERS, ADMIN_SECRET, MAILGUN_API_KEY m.fl.) sættes i Cloudflare under Settings, aldrig her.
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "kloakservicekbh-test",
+  "main": "cloudflare/worker.mjs",
+  "compatibility_date": "2026-11-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": "./dist/current",
+    "binding": "ASSETS",
+    "html_handling": "force-trailing-slash",
+    "not_found_handling": "404-page"
+  },
+  // Database og fillager er oprettet med EU-jurisdiktion (data gemmes i EU).
+  "d1_databases": [
+    { "binding": "DB", "database_name": "vaekster-crm", "database_id": "db331ef6-3237-43bb-bb7e-fbc9a3e16e0d" }
+  ],
+  "r2_buckets": [
+    { "binding": "FILES", "bucket_name": "vaekster-filer", "jurisdiction": "eu" }
+  ],
+  "ratelimits": [
+    { "name": "LEAD_LIMIT", "namespace_id": "1001", "simple": { "limit": 10, "period": 60 } },
+    { "name": "ADMIN_LIMIT", "namespace_id": "1002", "simple": { "limit": 60, "period": 60 } }
+  ],
+  "vars": {
+    "SITE_ID": "kloakservicekbh",
+    "BRAND_NAME": "KloakServiceKbh",
+    "MAILGUN_REGION": "eu",
+    "MAILGUN_DOMAIN": "leads.indsendelse.dk",
+    "CONFIRM_MAILGUN_DOMAIN": "svar.indsendelse.dk",
+    "CONFIRM_PHONE": "51 400 490"
+  },
+  "observability": { "enabled": true }
+}

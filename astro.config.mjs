@@ -20,8 +20,8 @@ export default defineConfig({
   output: 'static',
   trailingSlash: 'always',
   publicDir,
-  // På Netlify (NETLIFY=true) bygges altid til dist/current, så netlify.toml kan pege på én fast mappe.
-  outDir: process.env.NETLIFY ? './dist/current' : `./dist/${KUNDE}`,
+  // På Netlify og Cloudflare bygges altid til dist/current, så netlify.toml og wrangler.jsonc kan pege på én fast mappe.
+  outDir: process.env.NETLIFY || process.env.WORKERS_CI || process.env.CF_PAGES ? './dist/current' : `./dist/${KUNDE}`,
   build: {
     format: 'directory',
     // Ingen inline CSS, så Content-Security-Policy kan nøjes med style-src 'self'.

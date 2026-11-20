@@ -124,7 +124,7 @@ export function postPath(id, site = loadSite()) {
 }
 
 /** Optimér fjernbilleder fra kundens domæne ved bygning (kræver netadgang, derfor kun på Netlify som standard). */
-export const REMOTE_OPT = process.env.NETLIFY === 'true' || process.env.OPTIMIZE_REMOTE === 'true';
+export const REMOTE_OPT = process.env.NETLIFY === 'true' || !!process.env.WORKERS_CI || !!process.env.CF_PAGES || process.env.OPTIMIZE_REMOTE === 'true';
 
 export function hasBlog() {
   if (loadSite().blog?.enabled === false) return false;
