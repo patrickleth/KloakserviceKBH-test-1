@@ -1,0 +1,116 @@
+---
+// Mini-CRM for kunden: alle henvendelser fra hjemmesidens formularer + manuelle leads, som et Trello-board.
+// Skjult adresse, noindex, ingen sporing, ikke i sitemap. Data hentes fra /administrator-system/api/ (netlify/functions/admin.mjs).
+import '../../styles/_tokens.css';
+import '../../styles/admin.css';
+import { site } from '../../lib/site';
+---
+<!doctype html>
+<html lang="da">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="referrer" content="no-referrer" />
+  <title>Henvendelser | {site.name}</title>
+  <link rel="icon" href={site.brand.favicon || site.brand.logo} />
+</head>
+<body class="crm" data-site={site.name}>
+  <main id="login" class="crm-login" hidden>
+    <form class="login-card" data-login>
+      <img src={site.brand.logo} alt={site.name} class="login-logo" width="180" height="56" />
+      <h1>Henvendelser</h1>
+      <p class="muted">Log ind for at se og følge op på dine leads.</p>
+      <label>Brugernavn<input name="bruger" autocomplete="username" required autocapitalize="none" spellcheck="false" /></label>
+      <label>Adgangskode<input name="kode" type="password" autocomplete="current-password" required /></label>
+      <p class="crm-error" role="alert" hidden></p>
+      <p class="crm-ok" role="status" hidden></p>
+      <button class="cbtn cbtn-cta cbtn-block" type="submit">Log ind</button>
+      <p class="login-alt"><button type="button" class="linkish" data-show-forgot>Glemt adgangskode?</button></p>
+    </form>
+    <form class="login-card" data-forgot hidden>
+      <img src={site.brand.logo} alt={site.name} class="login-logo" width="180" height="56" />
+      <h1>Glemt adgangskode</h1>
+      <p class="muted">Skriv dit brugernavn eller din e-mail, så sender vi et link, hvor du kan vælge en ny.</p>
+      <label>Brugernavn eller e-mail<input name="bruger" autocomplete="username" required autocapitalize="none" spellcheck="false" /></label>
+      <p class="crm-ok" role="status" hidden></p>
+      <button class="cbtn cbtn-cta cbtn-block" type="submit">Send link</button>
+      <p class="login-alt"><button type="button" class="linkish" data-show-login>Tilbage til log ind</button></p>
+    </form>
+    <form class="login-card" data-reset hidden>
+      <img src={site.brand.logo} alt={site.name} class="login-logo" width="180" height="56" />
+      <h1>Vælg ny adgangskode</h1>
+      <p class="muted">Mindst 10 tegn. Brug gerne en sætning, fx tre tilfældige ord.</p>
+      <label>Ny adgangskode<input name="kode" type="password" autocomplete="new-password" minlength="10" required /></label>
+      <label>Gentag adgangskode<input name="kode2" type="password" autocomplete="new-password" minlength="10" required /></label>
+      <p class="crm-error" role="alert" hidden></p>
+      <button class="cbtn cbtn-cta cbtn-block" type="submit">Gem ny adgangskode</button>
+    </form>
+  </main>
+
+  <div id="app" hidden>
+    <header class="crm-top">
+      <img src={site.brand.logo} alt="" class="top-logo" width="140" height="44" />
+      <strong class="top-title">Henvendelser</strong>
+      <input class="crm-search" type="search" placeholder="Søg navn, telefon, adresse, opgave" aria-label="Søg i leads" data-search />
+      <button class="cbtn cbtn-cta" type="button" data-new>+ Nyt lead</button>
+      <button class="cbtn cbtn-ghost" type="button" data-logout>Log ud</button>
+    </header>
+    <section class="crm-stats" aria-label="Overblik" data-stats></section>
+    <section class="board" aria-label="Leads efter status" data-board></section>
+    <p class="crm-foot muted"><button type="button" class="linkish" data-show-archived>Vis arkiverede</button> · Opdateres automatisk hvert minut</p>
+  </div>
+
+  <dialog class="crm-modal" data-modal>
+    <form method="dialog" class="modal-inner" data-detail></form>
+  </dialog>
+
+  <template id="tpl-detail">
+    <div class="modal-head">
+      <div><p class="eyebrow-s" data-f="kildeTxt"></p><h2 data-f="titel"></h2></div>
+      <button class="x" value="luk" aria-label="Luk">×</button>
+    </div>
+    <div class="modal-grid">
+      <div class="mcol">
+        <div class="quick" data-quick></div>
+        <label>Status<select name="status" data-status></select></label>
+        <div class="row2">
+          <label>Navn<input name="navn" maxlength="120" required /></label>
+          <label>Telefon<input name="telefon" maxlength="30" inputmode="tel" /></label>
+        </div>
+        <div class="row2">
+          <label>E-mail<input name="email" type="email" maxlength="160" /></label>
+          <label>Værdi (kr.)<input name="vaerdi" inputmode="numeric" pattern="[0-9]*" /></label>
+        </div>
+        <label>Adresse<input name="adresse" maxlength="160" /></label>
+        <div class="row2">
+          <label>Postnr.<input name="postnr" maxlength="8" inputmode="numeric" /></label>
+          <label>By<input name="by" maxlength="80" /></label>
+        </div>
+        <div class="row2">
+          <label>Opgave<input name="ydelse" maxlength="120" /></label>
+          <label>Ansvarlig<input name="ansvarlig" maxlength="60" /></label>
+        </div>
+        <label>Beskrivelse<textarea name="beskrivelse" rows="4" maxlength="4000"></textarea></label>
+        <div class="files" data-files></div>
+        <p class="meta" data-meta></p>
+      </div>
+      <div class="mcol">
+        <h3>Noter</h3>
+        <label class="sr">Ny note<textarea name="note" rows="3" maxlength="2000" placeholder="Skriv en note, fx 'Ringet, kommer forbi torsdag'"></textarea></label>
+        <ul class="notes" data-notes></ul>
+        <details class="hist"><summary>Historik</summary><ul data-hist></ul></details>
+      </div>
+    </div>
+    <p class="crm-error" role="alert" hidden></p>
+    <div class="modal-actions">
+      <button type="button" class="cbtn cbtn-ghost" data-archive>Arkivér</button>
+      <span class="spacer"></span>
+      <button value="luk" class="cbtn cbtn-ghost">Luk</button>
+      <button type="button" class="cbtn cbtn-cta" data-save>Gem</button>
+    </div>
+  </template>
+
+  <script src="../../scripts/admin.ts"></script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+node_modules/
+dist/
+rapport/
+.astro/
+src/styles/_tokens.css
+.env
+.env.*
+.netlify/
+skaermbilleder/

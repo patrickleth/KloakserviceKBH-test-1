@@ -1,0 +1,16 @@
+---
+// Kort-blok med overlinje, overskrift og 2-6 kort (fx "Tre ting der har størst betydning for prisen").
+import { render } from '../lib/markdown';
+interface Props { eyebrow?: string; heading: string; lead?: string; items: { title: string; text: string }[]; numbered?: boolean }
+const { eyebrow, heading, lead, items, numbered = false } = Astro.props;
+---
+<section class="cards-sec" aria-labelledby="cards-h">
+  <div class="wrap">
+    {eyebrow && eyebrow.toLowerCase() !== heading.toLowerCase() && <p class="eyebrow center">{eyebrow}</p>}
+    <h2 id="cards-h" class="center">{heading}</h2>
+    {lead && <p class="lead center">{lead}</p>}
+    <ul class:list={['cards', `n${Math.min(items.length, 4)}`]}>
+      {items.map((c, i) => <li class="card">{numbered && <span class="card-num">{String(i + 1).padStart(2, '0')}</span>}<h3>{c.title}</h3><Fragment set:html={render(c.text)} /></li>)}
+    </ul>
+  </div>
+</section>

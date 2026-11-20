@@ -1,0 +1,106 @@
+---
+// Alle undersider. Sidetypen (type i frontmatter) vælger opbygningen.
+import Base from '../layouts/Base.astro';
+import Schema from '../components/Schema.astro';
+import Hero from '../components/Hero.astro';
+import Reviews from '../components/Reviews.astro';
+import Sections from '../components/Sections.astro';
+import Cards from '../components/Cards.astro';
+import PersonCta from '../components/PersonCta.astro';
+import LocalProof from '../components/LocalProof.astro';
+import LogoRows from '../components/LogoRows.astro';
+import LogoBand from '../components/LogoBand.astro';
+import AreasBlock from '../components/AreasBlock.astro';
+import Faq from '../components/Faq.astro';
+import ContactBlock from '../components/ContactBlock.astro';
+import PriceBlocks from '../components/PriceBlocks.astro';
+import { render, faqFromBody, splitSections, isFaqHeading } from '../lib/markdown';
+import { site, allPages, bySlug, href, crumbs, metaDescription, telHref, groupOf, type Page } from '../lib/site';
+
+export async function getStaticPaths() {
+  const pages = await allPages();
+  return pages.filter(p => !['index', 'henvendelse', 'udfyldt-prisberegner'].includes(p.id)).map(p => ({ params: { slug: p.id }, props: { page: p } }));
+}
+
+const { page } = Astro.props as { page: Page };
+const d = page.data;
+const pages = await bySlug();
+const c = crumbs(page);
+const slug = page.id;
+
+// Bysider uden lokal dokumentation: advarsel i byggerapporten, og noindex hvis kundens politik siger det.
+const thinCity = d.type === 'city' && d.localProof.length === 0;
+const noindex = d.noindex || d.type === 'lp' || (thinCity && site.cityPolicy === 'noindex');
+
+const group = groupOf(slug);
+const related = (group?.children || []).filter((s: string) => s !== slug && s in pages);
+const schemaKind = d.type === 'city' ? 'city' : ['service', 'legeplads'].includes(d.type) ? 'service' : 'page';
+const isArticle = d.type === 'legal' || d.type === 'job';
+const isLp = d.type === 'lp';
+const isQuote = d.type === 'quote';
+const faq = d.faq?.length ? { heading: 'Ofte stillede spørgsmål', items: d.faq } : faqFromBody(page.body);
+const nSections = splitSections(page.body).filter(s => !isFaqHeading(s.heading)).length;
+const heroImage = d.heroImage || d.images[0] || site.brand.hero;
+// Sektionsbilleder: når første billede bruges i hero, starter sektionerne med det næste.
+const sectionImages = d.heroImage ? d.images
+  : d.images.length > 1 ? d.images.slice(1)
+  : site.brand.work ? [site.brand.work] : d.images;
+// Billede til person-CTA-båndet: det første i rækken, som sektionerne ikke selv bruger (samme rækkefølge som Sections.astro).
+const seenPic = new Set<string>([heroImage?.src].filter(Boolean) as string[]);
+const picRow = [...sectionImages, ...(site.gallery || []), ...(site.brand.work ? [site.brand.work] : [])].filter((p: any) => p && !seenPic.has(p.src) && seenPic.add(p.src));
+const pctaImage = picRow.length ? picRow[Math.max(nSections, 2) % picRow.length] : undefined;
+const leadtype = isLp ? `landingsside${d.variant ? '-' + d.variant : ''}` : isQuote ? 'tilbudsside' : 'formular';
+---
+<Base title={d.title} description={metaDescription(d)} slug={slug} type={d.type} noindex={noindex} minimalHeader={isLp || isQuote} overHero={!isArticle}>
+  <Schema slot="head" kind={schemaKind} slug={slug} name={d.navLabel} crumbs={c} city={d.city} />
+
+  {isArticle ? (
+    <>
+      <nav class="crumbs wrap" aria-label="Brødkrumme"><ol>
+        {c.map((x, i) => i === c.length - 1 ? <li aria-current="page">{x.name}</li> : <li><a href={href(x.slug)}>{x.name}</a></li>)}
+      </ol></nav>
+      <article class="wrap prose">
+        <h1>{d.h1}</h1>
+        {d.intro && <p class="lead">{d.intro}</p>}
+        <Fragment set:html={render(page.body || '')} />
+        {d.type === 'job' && <p>Send en ansøgning til <a href={`mailto:${site.email}`} data-track="mailto_click">{site.email}</a> eller ring på <a href={telHref} data-track="tel_click">{site.phone.display}</a>.</p>}
+      </article>
+    </>
+  ) : d.type === 'pricing' ? (
+    <>
+      <Hero h1={d.h1} eyebrow={d.eyebrow} intro={d.intro} image={heroImage} video={d.heroVideo} usps={d.usps} slug={slug} form={false} compact />
+      <PriceBlocks prices={d.prices} urgent={d.urgent} billing={d.billing} pages={pages} />
+      <Reviews />
+      <Sections body={page.body} images={sectionImages} />
+      {faq && <Faq heading={faq.heading} items={faq.items} />}
+      <ContactBlock slug={slug} leadtype={leadtype} />
+    </>
+  ) : isQuote ? (
+    <>
+      <Hero h1={d.h1} eyebrow={d.eyebrow} intro={d.intro} image={heroImage} video={d.heroVideo} usps={d.usps} slug={slug} leadtype={leadtype} formTitle={d.formTitle} formId="tilbud" />
+      <LogoBand />
+      <Reviews />
+      <PersonCta {...(d.personCta || {})} image={pctaImage} />
+    </>
+  ) : (
+    <>
+      <Hero h1={d.h1} eyebrow={d.eyebrow} intro={d.intro} image={heroImage} video={d.heroVideo} usps={isLp && d.lpBullets ? d.lpBullets : d.usps} slug={slug} preselect={d.formService} leadtype={leadtype} formTitle={d.formTitle} />
+      {!isLp && <LogoBand />}
+      <Reviews />
+      {!isLp && <LogoRows />}
+      <Sections body={page.body} images={sectionImages} to={2} />
+      {!isLp && <PersonCta {...(d.personCta || {})} image={pctaImage} />}
+      {nSections > 2 && <Sections body={page.body} images={sectionImages} from={2} offset={1} />}
+      {d.cards && <Cards {...d.cards} />}
+      {d.type === 'city' && <LocalProof city={d.city} items={d.localProof} />}
+      {!isLp && ['service', 'legeplads', 'city'].includes(d.type) && <AreasBlock service={d.formService} exclude={slug} heading={d.type === 'city' && d.formService ? `${d.formService} i andre områder` : undefined} />}
+      {faq && <Faq heading={faq.heading} items={faq.items} />}
+      {!isLp && related.length > 0 && (
+        <nav class="related wrap" aria-labelledby="rel-h"><h2 id="rel-h" class="h4">{group.label === 'Vi tilbyder' ? 'Andre opgaver vi løser' : `Mere om ${group.label.toLowerCase()}`}</h2>
+          <ul>{related.map((s: string) => <li><a href={href(s)}>{pages[s].data.navLabel}</a></li>)}</ul>
+        </nav>
+      )}
+      <ContactBlock slug={slug} preselect={d.formService} leadtype={leadtype} />
+    </>
+  )}
+</Base>

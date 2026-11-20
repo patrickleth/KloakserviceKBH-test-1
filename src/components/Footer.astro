@@ -1,0 +1,46 @@
+---
+import CertLogos from './CertLogos.astro';
+// Footer: firma og kontakt, ydelser, områder (bysider findes automatisk), virksomhed og juridisk.
+import { site, href, bySlug, telHref } from '../lib/site';
+const pages = await bySlug();
+const has = (s: string) => s in pages;
+const label = (s: string) => pages[s]?.data.navLabel ?? s;
+const services = (site.menu.find((m: any) => m.children)?.children || []).filter(has);
+const allCities = Object.values(pages).filter((p: any) => p.data.type === 'city' && !p.data.noindex).map((p: any) => p.id).sort();
+// Mange bysider (fx 80): footeren viser de første 12; resten findes i områdeblokken på forsiden og ydelsessiderne.
+const cities = allCities.slice(0, 12);
+const legalTypes = ['legal'];
+const legal = Object.values(pages).filter((p: any) => legalTypes.includes(p.data.type)).map((p: any) => p.id);
+const company = site.footerLinks.filter((s: string) => has(s) && !legal.includes(s) && !cities.includes(s) && !services.includes(s));
+const hasBlog = Astro.props.hasBlog;
+---
+<footer class="site-footer">
+  <div class="wrap foot-grid">
+    <div class="foot-brand">
+      <img class="foot-logo" src={site.brand.logo} alt={site.name} width="160" height="50" loading="lazy" />
+      {site.footerAbout && <p>{site.footerAbout}</p>}
+      <p>CVR: {site.cvr}</p>
+    </div>
+    <div>
+      <h2 class="foot-h">Kontakt</h2>
+      <p><span class="foot-label">Ring til os</span><a href={telHref} data-track="tel_click">{site.phone.display}</a></p>
+      <p><span class="foot-label">Skriv til os</span><a href={`mailto:${site.email}`} data-track="mailto_click">{site.email}</a></p>
+      <p><span class="foot-label">Adresse</span>{site.address.street}, {site.address.postal} {site.address.city}</p>
+      {site.phoneHours && <p><span class="foot-label">Telefontider</span>{site.phoneHours}</p>}
+    </div>
+    {services.length > 0 && <div><h2 class="foot-h">Ydelser</h2><ul>{services.map((s: string) => <li><a href={href(s)}>{label(s)}</a></li>)}</ul></div>}
+    {cities.length > 0 && <div><h2 class="foot-h">Områder</h2><ul>{cities.map((s: string) => <li><a href={href(s)}>{label(s)}</a></li>)}{allCities.length > cities.length && <li><a href="/#omr-h">Se alle {allCities.length} områder</a></li>}</ul></div>}
+    <div>
+      <h2 class="foot-h">Virksomhed</h2>
+      <ul>
+        {company.map((s: string) => <li><a href={href(s)}>{label(s)}</a></li>)}
+        {hasBlog && <li><a href="/blog/">Blog</a></li>}
+        {legal.map((s: string) => <li><a href={href(s)}>{label(s)}</a></li>)}
+        <li><a href={href(site.privacySlug)} data-cookie-settings>Cookieindstillinger</a></li>
+        {Object.entries(site.social || {}).filter(([, u]) => u).map(([k, u]) => <li><a href={u as string} rel="noopener">{k.charAt(0).toUpperCase() + k.slice(1)}</a></li>)}
+      </ul>
+    </div>
+  </div>
+  <div class="wrap"><CertLogos variant="footer" /></div>
+  <p class="wrap copy">© {new Date().getFullYear()} {site.name}</p>
+</footer>

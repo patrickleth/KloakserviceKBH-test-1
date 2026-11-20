@@ -1,0 +1,23 @@
+---
+// Ydelseskort til forsiden med baggrundsbillede, titel, kort tekst og "Læs mere".
+import Icon from './Icon.astro';
+import Img from './Img.astro';
+import { href } from '../lib/site';
+interface Props { heading?: string; items: { slug: string; title: string; text: string; image?: { src: string; alt: string } }[] }
+const { heading = 'Vores ydelser', items } = Astro.props;
+---
+{items.length > 0 && (
+  <section class="services" aria-labelledby="ydelser-h"><div class="wrap">
+    <h2 id="ydelser-h" class="center">{heading}</h2>
+    <ul class="service-grid">
+      {items.map(s => (
+        <li><a class="service-card" href={href(s.slug)}>
+          {s.image && <Img class="service-bg" src={s.image.src} alt="" sizes="(max-width: 600px) 100vw, 400px" widths={[400, 640, 800]} />}
+          <h3>{s.title}</h3>
+          {s.text && <p>{s.text}</p>}
+          <span class="more">Læs mere <Icon name="arrow" size={15} /></span>
+        </a></li>
+      ))}
+    </ul>
+  </div></section>
+)}

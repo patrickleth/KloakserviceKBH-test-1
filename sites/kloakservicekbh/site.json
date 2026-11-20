@@ -1,0 +1,428 @@
+{
+  "name": "KloakServiceKbh",
+  "domain": "https://kloakservicekbh.dk",
+  "phone": {
+    "display": "51 400 490",
+    "e164": "+4551400490"
+  },
+  "email": "kontakt@kloakservicekbh.dk",
+  "address": {
+    "street": "Kildeager 3",
+    "postal": "2680",
+    "city": "Solrød Strand",
+    "country": "DK"
+  },
+  "cvr": "41822457",
+  "contactPerson": "",
+  "phoneHours": "Kontoret: mandag-torsdag 06:00-15:00, fredag 06:00-12:00. Døgnvagt alle øvrige tider, weekender og helligdage.",
+  "areaServed": [
+    "Storkøbenhavn",
+    "Nordsjælland",
+    "Sjælland"
+  ],
+  "businessType": "Plumber",
+  "social": {},
+  "tokens": {
+    "primary": "#AC1414",
+    "primaryDark": "#141414",
+    "primaryLight": "#E8A3A3",
+    "tint": "#F5F5F5",
+    "accent": "#EAE542",
+    "star": "#00B67A",
+    "radius": "8px",
+    "fontHeading": "inter-tight",
+    "fontBody": "inter-tight",
+    "call": "#AC1414",
+    "cta": "#EAE542",
+    "ctaText": "#000000",
+    "formBg": "#141414"
+  },
+  "brand": {
+    "logo": "https://kloakservicekbh.dk/wp-content/uploads/2024/11/KloakServiceKBH_NY2.webp",
+    "logoLight": "https://kloakservicekbh.dk/wp-content/uploads/2024/11/KloakServiceKBH_NY2.webp",
+    "favicon": "https://kloakservicekbh.dk/wp-content/uploads/2024/11/KloakServiceKBH_NY2.webp",
+    "hero": {
+      "src": "https://kloakservicekbh.dk/wp-content/uploads/2026/07/KloakServiceKbh-9-komp.webp",
+      "alt": "Kloakmester fra KloakServiceKbh på opgave"
+    },
+    "heroVideo": {
+      "src": "https://kloakservicekbh.dk/wp-content/uploads/2026/07/Vaekster-Kloakservice_B-roll.mp4"
+    },
+    "work": {
+      "src": "https://kloakservicekbh.dk/wp-content/uploads/2025/03/Kloakservice-KBH-Billeder-8.jpg",
+      "alt": "KloakServiceKbh i gang med kloakarbejde"
+    }
+  },
+  "gallery": [
+    {
+      "src": "https://kloakservicekbh.dk/wp-content/uploads/2026/07/KloakServiceKbh-9-komp.webp",
+      "alt": "KloakServiceKbh på opgave"
+    },
+    {
+      "src": "https://kloakservicekbh.dk/wp-content/uploads/2025/03/Kloakservice-KBH-Billeder-8.jpg",
+      "alt": "KloakServiceKbh på opgave"
+    },
+    {
+      "src": "https://kloakservicekbh.dk/wp-content/uploads/2025/03/kloakservicekbh-Spuleanlaeg-5.jpg",
+      "alt": "KloakServiceKbh på opgave"
+    },
+    {
+      "src": "https://kloakservicekbh.dk/wp-content/uploads/2025/03/Kloakservice-KBH-Billeder-7.jpg",
+      "alt": "KloakServiceKbh på opgave"
+    },
+    {
+      "src": "https://kloakservicekbh.dk/wp-content/uploads/2025/03/Kloakservice-KBH-Billeder-11.jpg",
+      "alt": "KloakServiceKbh på opgave"
+    },
+    {
+      "src": "https://kloakservicekbh.dk/wp-content/uploads/2025/03/Kloakservice-KBH-Billeder-3.jpg",
+      "alt": "KloakServiceKbh på opgave"
+    },
+    {
+      "src": "https://kloakservicekbh.dk/wp-content/uploads/2026/07/KloakServiceKbh-27-komp.webp",
+      "alt": "KloakServiceKbh på opgave"
+    },
+    {
+      "src": "https://kloakservicekbh.dk/wp-content/uploads/2026/07/KloakServiceKbh-28-komp.webp",
+      "alt": "KloakServiceKbh på opgave"
+    },
+    {
+      "src": "https://kloakservicekbh.dk/wp-content/uploads/2026/07/KloakServiceKbh-18-komp.webp",
+      "alt": "KloakServiceKbh på opgave"
+    },
+    {
+      "src": "https://kloakservicekbh.dk/wp-content/uploads/2026/07/KloakServiceKbh-17-komp.webp",
+      "alt": "KloakServiceKbh på opgave"
+    },
+    {
+      "src": "https://kloakservicekbh.dk/wp-content/uploads/2026/07/KloakServiceKbh-5-komp.webp",
+      "alt": "KloakServiceKbh på opgave"
+    },
+    {
+      "src": "https://kloakservicekbh.dk/wp-content/uploads/2026/07/KloakServiceKbh-1-komp.webp",
+      "alt": "KloakServiceKbh på opgave"
+    },
+    {
+      "src": "https://kloakservicekbh.dk/wp-content/uploads/2025/03/Kloakservice-KBH-Billeder-12.jpg",
+      "alt": "KloakServiceKbh på opgave"
+    },
+    {
+      "src": "https://kloakservicekbh.dk/wp-content/uploads/2025/03/Kloakservice-KBH-Billeder-6.jpg",
+      "alt": "KloakServiceKbh på opgave"
+    }
+  ],
+  "badges": [
+    "+5000 glade kunder",
+    "Tilbud inden for 2 timer*",
+    "Fremragende på Trustpilot",
+    "Døgnudkald alle dage inkl. weekend"
+  ],
+  "rating": {
+    "score": 5,
+    "source": "Fremragende på Trustpilot"
+  },
+  "stats": [
+    {
+      "value": "+5000",
+      "label": "glade kunder"
+    },
+    {
+      "value": "25+",
+      "label": "års erfaring"
+    },
+    {
+      "value": "24/7",
+      "label": "døgnvagt alle dage"
+    },
+    {
+      "value": "2 timer",
+      "label": "svar på skriftlige henvendelser*"
+    }
+  ],
+  "footerAbout": "KloakServiceKbh løser både små og store kloakopgaver for private, erhverv, kommuner og foreninger i hele Storkøbenhavn, Nordsjælland og på Sjælland. Hos os er en aftale en aftale.",
+  "reviews": [
+    {
+      "name": "Sofia Vestergaard",
+      "rating": 5,
+      "date": "24. okt. 2024",
+      "text": "Den bedste service nogensinde!!! Karsten, Steffen, Allan og Patrick (og en lærling) har været hos mig flere gange pga virkelig ubehagelig lugt i mit nykøbte hus...",
+      "source": "Trustpilot"
+    },
+    {
+      "name": "Camilla Karlsson",
+      "rating": 5,
+      "date": "10. sep. 2024",
+      "text": "Super service. De overholder aftaler til punkt og prikke, og de stiller altid med profesionelle folk. Kan varmt anbefale Kloakservicekbh.",
+      "source": "Trustpilot"
+    },
+    {
+      "name": "Emma Spetzler Eriksen",
+      "rating": 5,
+      "source": "Google",
+      "text": "Rigtig god service. Kom hurtigt og klarede det på 10 min. Og godt humør 🙂"
+    },
+    {
+      "name": "Mikkel Larsen",
+      "rating": 5,
+      "date": "23. nov. 2023",
+      "text": "Vi har brugt Kloakservice Kbh flere gange, da vi skulle have repareret og omlægge vores kloak flere forskellige steder på vores grund...",
+      "source": "Trustpilot"
+    },
+    {
+      "name": "Kevin Laursen",
+      "rating": 5,
+      "date": "30. dec. 2023",
+      "text": "Fik en god og hurtig service. Og prisen var langt billigere end jeg havde regnet med.",
+      "source": "Trustpilot"
+    },
+    {
+      "name": "Nithinan S.",
+      "rating": 5,
+      "source": "Google",
+      "text": "Virkelig hurtig og god service. Vi har flere gange brugt dem til alt kloak arbejde i vores restaurant."
+    },
+    {
+      "name": "Mikail Özbölük",
+      "rating": 5,
+      "source": "Google",
+      "text": "Super service og rimelige priser. Jeg kan klart anbefale deres weekend service."
+    },
+    {
+      "name": "Bjarne Sørensen",
+      "rating": 5,
+      "date": "5. sep. 2023",
+      "text": "Hurtig udrykning, også selvom opgaven ikke var akut. Sebastian vidste, hvad han talte om...",
+      "source": "Trustpilot"
+    },
+    {
+      "name": "Christina Lindgaard Gerken",
+      "rating": 5,
+      "date": "12. jun. 2024",
+      "text": "Fik meget hurtigt hjælp til vores akutte kloarkproblem, og meget behagelig service både over telefonen og i person. Vil være meget tryg ved at bruge kloarkservicekbh igen.",
+      "source": "Trustpilot"
+    },
+    {
+      "name": "Klaus",
+      "rating": 5,
+      "date": "24. mar. 2024",
+      "text": "WOW! Oprigtigt talt. Super ordentlig service. Fik en fuld gennemgang af brønde, afløb og kloak. Kenneth gennemgik filmen med mig og da jeg - måneder efter - havde brug for dokumentationen...",
+      "source": "Trustpilot"
+    }
+  ],
+  "partners": [
+    {
+      "name": "Cabinn",
+      "logo": "https://kloakservicekbh.dk/wp-content/uploads/2025/03/Cabinn.png"
+    },
+    {
+      "name": "Dansk Kabel TV",
+      "logo": "https://kloakservicekbh.dk/wp-content/uploads/2025/03/Dansk-kabel-tv.png"
+    },
+    {
+      "name": "Formula",
+      "logo": "https://kloakservicekbh.dk/wp-content/uploads/2025/03/Formula.png"
+    },
+    {
+      "name": "Hoffmann",
+      "logo": "https://kloakservicekbh.dk/wp-content/uploads/2025/03/Hoffmann.png"
+    },
+    {
+      "name": "Jakon",
+      "logo": "https://kloakservicekbh.dk/wp-content/uploads/2025/03/Jakon.png"
+    },
+    {
+      "name": "Silvan",
+      "logo": "https://kloakservicekbh.dk/wp-content/uploads/2025/12/Silvan-500x200-1.png"
+    },
+    {
+      "name": "Plantorama",
+      "logo": "https://kloakservicekbh.dk/wp-content/uploads/2025/12/Plantorama-500x200-1.png"
+    },
+    {
+      "name": "Aarsleff",
+      "logo": "https://kloakservicekbh.dk/wp-content/uploads/2025/12/Aarsleff-500x200-1.png"
+    },
+    {
+      "name": "FORCE Technology",
+      "logo": "https://kloakservicekbh.dk/wp-content/uploads/2026/05/Force-technology-2.png"
+    }
+  ],
+  "logoRows": [
+    {
+      "heading": "Som nævnt i danske medier",
+      "logos": [
+        {
+          "name": "TV 2 Kosmopol",
+          "logo": "https://kloakservicekbh.dk/wp-content/uploads/2026/01/TV_2_Kosmopol_2023_S.webp"
+        },
+        {
+          "name": "B.T.",
+          "logo": "https://kloakservicekbh.dk/wp-content/uploads/2026/05/Unavngivet-1000-x-1000-px.png"
+        },
+        {
+          "name": "DR P4",
+          "logo": "https://kloakservicekbh.dk/wp-content/uploads/2026/01/DR_P4_2017_logo.png"
+        },
+        {
+          "name": "Ekstra Bladet",
+          "logo": "https://kloakservicekbh.dk/wp-content/uploads/2026/01/Ekstra_Bladet_logo.png"
+        }
+      ]
+    },
+    {
+      "heading": "Autoriseret og certificeret",
+      "logos": [
+        {
+          "name": "Certifikat",
+          "logo": "https://kloakservicekbh.dk/wp-content/uploads/2025/03/certifikat-nyt.png"
+        },
+        {
+          "name": "Byggeriets Garantiordning",
+          "logo": "https://kloakservicekbh.dk/wp-content/uploads/2025/03/byg-garanti-kloakservice.png",
+          "onDark": true
+        },
+        {
+          "name": "Børsen Gazelle 2025",
+          "logo": "https://kloakservicekbh.dk/wp-content/uploads/2024/12/gazelle2025-logo_rgb_negativ.png",
+          "onDark": true
+        }
+      ],
+      "hero": true,
+      "footer": true,
+      "section": false
+    }
+  ],
+  "personCta": {
+    "heading": "Skal du bruge akut kloakservice?",
+    "text": "Vi har døgnservice og står altid klar til at hjælpe dig med dit kloakproblem. Ring til os, hvis du har brug for akut assistance. Akutte henvendelser behandles ikke via formularen."
+  },
+  "stickyLabel": "Døgnvagt alle dage",
+  "responseNote": "Vi besvarer skriftlige henvendelser inden for 2 timer på hverdage",
+  "form": {
+    "services": [
+      "Kloakservice",
+      "Kloakspuling",
+      "Kloakrensning",
+      "Slamsugning",
+      "Tv-inspektion",
+      "Andet"
+    ],
+    "variant": "kort",
+    "title": "Få et gratis tilbud",
+    "files": true,
+    "thankYou": "henvendelse"
+  },
+  "menu": [
+    {
+      "label": "Ydelser",
+      "children": [
+        "kloakservice",
+        "kloakspuling",
+        "kloakrensning",
+        "kloakrenovering",
+        "hoejtryksspuling",
+        "hoejvandslukke",
+        "faldstamme",
+        "faskine",
+        "fedtudskiller",
+        "omfangsdraen",
+        "rodskaering",
+        "rottebekaempelse",
+        "intelligent-rottefaelde",
+        "reparation-af-kloak",
+        "slamsugning",
+        "stroempeforing-af-kloak-pris",
+        "tv-inspektion",
+        "toemning-af-olietank",
+        "toemning-af-septiktank"
+      ]
+    },
+    {
+      "label": "Tilstopninger",
+      "children": [
+        "stoppet-afloeb",
+        "stoppet-toilet",
+        "stoppet-vask",
+        "stoppet-kloak"
+      ]
+    },
+    {
+      "label": "Priser",
+      "slug": "kloakservice-priser"
+    },
+    {
+      "label": "FAQ",
+      "slug": "faq"
+    },
+    {
+      "label": "Job",
+      "slug": "job"
+    },
+    {
+      "label": "Blog",
+      "href": "/blog/"
+    },
+    {
+      "label": "Kontakt",
+      "slug": "kontakt"
+    }
+  ],
+  "footerLinks": [
+    "kloakservice-priser",
+    "faq",
+    "job",
+    "kontakt",
+    "cookies"
+  ],
+  "privacySlug": "cookies",
+  "quoteSlug": "kontakt",
+  "tracking": {
+    "gtmId": "GTM-PM5VGLH7",
+    "metaPixelId": "",
+    "consentMode": "basic",
+    "metaDomainVerification": "",
+    "googleSiteVerification": "QbsKwhWZ2sseB3h-FbswSP3XtxPsOh5L9W8zSD9ysbM"
+  },
+  "consent": {
+    "provider": "intern",
+    "cookiebotId": "2395522b-defd-4bc1-ad63-5ee66357ecd7"
+  },
+  "csp": {
+    "extraScript": [],
+    "extraConnect": [],
+    "extraImg": []
+  },
+  "cityPolicy": "warn",
+  "redirects": [
+    {
+      "from": "/indhent-tilbud/",
+      "to": "/kontakt/",
+      "status": 301
+    },
+    {
+      "from": "/kloakservice-tilbud/",
+      "to": "/kontakt/",
+      "status": 301
+    },
+    {
+      "from": "/forside/",
+      "to": "/",
+      "status": 301
+    }
+  ],
+  "thankYou": {
+    "faq": [
+      {
+        "q": "Hvornår hører jeg fra jer?",
+        "a": "Vi tilstræber at besvare skriftlige henvendelser inden for 2 timer på hverdage i vores normale arbejdstid."
+      },
+      {
+        "q": "Hvad hvis det er akut?",
+        "a": "Ved akutte problemer, der kræver hurtig hjælp, skal du altid ringe til os på 51 400 490. Akutte henvendelser bør ikke sendes via e-mail eller kontaktformular."
+      }
+    ]
+  },
+  "blog": {
+    "permalink": "root"
+  }
+}

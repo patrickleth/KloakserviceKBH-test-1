@@ -1,0 +1,14 @@
+---
+// Fast ring-knap: pille nederst til højre på computer, bjælke med Ring og Indhent tilbud nederst på mobil.
+import Icon from './Icon.astro';
+import { site, telHref } from '../lib/site';
+interface Props { quoteHref?: string }
+const { quoteHref = '#tilbud' } = Astro.props;
+---
+<div class="sticky-call">
+  <a class="sticky-pill" href={telHref} data-track="tel_click">
+    <span class="sticky-ico"><Icon name="phone" size={18} /></span>
+    <span class="sticky-txt">{site.stickyLabel && <small>{site.stickyLabel}</small>}<strong><span class="sticky-word">Ring </span>{site.phone.display}</strong></span>
+  </a>
+  <a class="sticky-msg" href={quoteHref}>Indhent tilbud</a>
+</div>

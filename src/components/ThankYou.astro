@@ -1,0 +1,81 @@
+---
+// Takkeside efter formular (/henvendelse/) eller prisberegner (/udfyldt-prisberegner/).
+// Formålet er ro i maven: hvad sker der nu, hvem kontakter dig, hvornår, og at andre har haft en god oplevelse.
+// Konverteringen (generate_lead og Meta Lead) sendes herfra af site.ts, én gang pr. lead.
+import Base from '../layouts/Base.astro';
+import Img from './Img.astro';
+import Icon from './Icon.astro';
+import Stars from './Stars.astro';
+import Reviews from './Reviews.astro';
+import Stats from './Stats.astro';
+import LogoRows from './LogoRows.astro';
+import Faq from './Faq.astro';
+import { site, href, bySlug, telHref } from '../lib/site';
+interface Props { kind: 'henvendelse' | 'prisberegner'; slug: string }
+const { kind, slug } = Astro.props;
+const t = site.thankYou || {};
+const first = site.contactPerson?.split(' ')[0];
+const r = site.rating;
+const calc = kind === 'prisberegner';
+const response = site.responseNote || 'Vi vender tilbage hurtigst muligt';
+const steps = t.steps || [
+  { title: calc ? 'Vi ser på din beregning' : 'Vi læser din henvendelse', text: calc ? 'Vi gennemgår de oplysninger, du har givet i beregneren.' : 'Vi gennemgår din beskrivelse og eventuelle billeder, så vi er forberedt, når vi kontakter dig.' },
+  { title: first ? `${first} kontakter dig` : 'Vi kontakter dig', text: `${response}. Vi ringer eller skriver for at høre lidt mere om opgaven og aftale det videre forløb.` },
+  { title: 'Du får et fast tilbud', text: calc ? 'Prisen fra beregneren er vejledende. Når vi kender opgaven, får du en fast pris uden skjulte tillæg.' : 'Når vi kender opgaven, får du en fast pris. Først når du siger ja, går vi i gang.' }
+];
+const pages = await bySlug();
+const services = (site.menu.find((m: any) => m.children)?.children || []).filter((s: string) => s in pages).slice(0, 6);
+---
+<Base title={`${calc ? "Tak for din beregning" : "Tak for din henvendelse"} | ${site.name}`} description="Vi har modtaget din henvendelse." slug={slug} type="thanks" noindex thanks={kind}>
+  <section class="thanks-hero">
+    <div class="wrap thanks-grid">
+      <div>
+        <span class="thanks-check" aria-hidden="true"><Icon name="check" size={34} /></span>
+        <h1>{calc ? 'Tak, vi har modtaget din beregning' : 'Tak for din henvendelse'}<span data-thanks-name></span></h1>
+        <p class="lead">{calc ? 'Vi kontakter dig snarest med en fast pris på din opgave.' : `Vi har modtaget din besked. ${response}.`}</p>
+        {r && <Stars rating={r.score} label={r.count ? `${String(r.score).replace('.', ',')} i gennemsnit fra ${r.count} anmeldelser` : r.source} />}
+      </div>
+      <aside class="urgent-box">
+        <p class="eyebrow">Haster det?</p>
+        <p>Ring direkte, så hjælper vi dig med det samme.</p>
+        <a class="btn btn-pill btn-call btn-block" href={telHref} data-track="tel_click"><Icon name="phone" size={16} />{site.phone.display}</a>
+        {site.phoneHours && <p class="small">{site.phoneHours}</p>}
+      </aside>
+    </div>
+  </section>
+
+  <section class="cards-sec" aria-labelledby="next-h">
+    <div class="wrap">
+      <p class="eyebrow center">Hvad sker der nu?</p>
+      <h2 id="next-h" class="center">Sådan foregår det herfra</h2>
+      <ol class="cards n3 steps-list">
+        {steps.map((s: any, i: number) => <li class="card"><span class="card-num">{String(i + 1).padStart(2, '0')}</span><h3>{s.title}</h3><p>{s.text}</p></li>)}
+      </ol>
+    </div>
+  </section>
+
+  {site.brand.person && (
+    <section class="person-cta" aria-labelledby="hand-h">
+      <div class="wrap pcta-grid">
+        <div class="pcta-photo"><Img src={site.brand.person.src} alt={site.brand.person.alt} widths={[240, 360]} sizes="150px" width={150} height={150} /><span class="pcta-badge" aria-hidden="true"><Icon name="shield" size={14} /></span></div>
+        <div>
+          <p class="eyebrow">Du er i gode hænder</p>
+          <h2 id="hand-h">{first ? `${first} og holdet tager sig af din opgave` : 'Vi tager os af din opgave'}</h2>
+          <p>{t.quote || site.personCta?.text || site.footerAbout}</p>
+        </div>
+      </div>
+    </section>
+  )}
+
+  <Reviews heading="Det siger vores kunder" />
+  <Stats />
+  <LogoRows />
+  {t.faq?.length > 0 && <Faq heading="Spørgsmål om forløbet" items={t.faq} />}
+
+  {services.length > 0 && (
+    <section class="services" aria-labelledby="mens-h"><div class="wrap">
+      <h2 id="mens-h" class="center">Imens du venter</h2>
+      <ul class="related-list">{services.map((s: string) => <li><a href={href(s)}>{pages[s].data.navLabel}<Icon name="arrow" size={15} /></a></li>)}</ul>
+    </div></section>
+  )}
+</Base>

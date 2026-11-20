@@ -1,0 +1,6 @@
+---
+// Prisberegnere (fx Fillout) sender folk hertil efter udfyldelse. Tilføj ?id=<svar-id>&navn=<navn> i
+// beregnerens viderestilling, så konverteringen kun tælles én gang og siden kan hilse med navn.
+import ThankYou from '../components/ThankYou.astro';
+---
+<ThankYou kind="prisberegner" slug="udfyldt-prisberegner" />

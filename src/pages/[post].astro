@@ -1,0 +1,18 @@
+---
+// Blogindlæg direkte på roden (/<slug>/), når site.blog.permalink = "root". Bevarer WordPress-adresserne ved flytning.
+// Navnet ([post]) giver ruten forrang for [...slug]; derfor stopper bygningen, hvis et indlæg og en side har samme slug.
+import BlogPost from '../components/BlogPost.astro';
+import { getCollection } from 'astro:content';
+import { hasBlog, loadSite } from '../lib/config.mjs';
+
+export async function getStaticPaths() {
+  if (!hasBlog() || loadSite().blog.permalink !== 'root') return [];
+  const posts = (await getCollection('blog')).filter(p => !p.data.draft);
+  const pageIds = new Set((await getCollection('pages')).map(p => p.id));
+  const clash = posts.filter(p => pageIds.has(p.id)).map(p => p.id);
+  if (clash.length) throw new Error(`Blogindlæg og sider med samme adresse: ${clash.join(', ')}. Omdøb det ene.`);
+  return posts.map(p => ({ params: { post: p.id }, props: { post: p, posts } }));
+}
+const { post, posts } = Astro.props as any;
+---
+<BlogPost post={post} posts={posts} />

@@ -1,0 +1,13 @@
+---
+// Stjerner i bokse + kilde (fx Trustpilot). Kun tal, kunden selv har dokumentation for.
+import Icon from './Icon.astro';
+interface Props { rating?: number; source?: string; label?: string; class?: string }
+const { rating = 5, source, label, class: cls } = Astro.props;
+const full = Math.round(rating);
+---
+<span class:list={['stars', cls]}>
+  <span class="star-row" role="img" aria-label={`${rating} ud af 5 stjerner`}>
+    {Array.from({ length: 5 }, (_, i) => <span class:list={['star-box', { off: i >= full }]}><Icon name="star" size={13} /></span>)}
+  </span>
+  {(label || source) && <span class="star-src">{label || source}</span>}
+</span>

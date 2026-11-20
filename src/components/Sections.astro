@@ -1,0 +1,41 @@
+---
+// Sidens Markdown delt i sektioner (ved hver ##). Hver sektion har overskrift, brødtekst, knapper og billede.
+// Billede og tekst skifter side, og fordelingen varierer (50/50, 60/40, 40/60), så siden ikke bliver ensformig.
+// "## Overlinje | Overskrift" giver en lille overlinje over overskriften.
+// En sektion med overskriften "Ofte stillede spørgsmål" (eller FAQ) tages fra og vises som harmonika (se Faq.astro).
+import { splitSections, isFaqHeading } from '../lib/markdown';
+import { site, telHref } from '../lib/site';
+import Img from './Img.astro';
+import Icon from './Icon.astro';
+interface Props { body?: string; images?: { src: string; alt: string }[]; from?: number; to?: number; offset?: number; cta?: boolean; quoteHref?: string }
+const { body, images = [], from = 0, to, offset = 0, cta = true, quoteHref = '#tilbud' } = Astro.props;
+const all = splitSections(body).filter(s => !isFaqHeading(s.heading));
+// Billeder: sidens egne først, så kundens galleri, så arbejdsbilledet. Genbruges i ring, hvis der er flere sektioner end billeder.
+const seen = new Set<string>();
+const pics = [...images, ...(site.gallery || []), ...(site.brand.work ? [site.brand.work] : [])].filter(p => p && !seen.has(p.src) && seen.add(p.src));
+const ratios = ['r-50', 'r-60', 'r-50', 'r-40'];
+const sections = all.slice(from, to);
+---
+{sections.map((s, k) => {
+  const i = from + k;
+  const n = i + offset;
+  const img = pics.length ? pics[i % pics.length] : null;
+  return (
+    <section class:list={['content-sec', { tinted: n % 2 === 1, flip: n % 2 === 1 }]}>
+      <div class:list={['wrap', img ? ['split', ratios[n % ratios.length]] : 'text-only']}>
+        <div class="sec-text">
+          {s.eyebrow && <p class="eyebrow">{s.eyebrow}</p>}
+          {s.heading && <h2>{s.heading}</h2>}
+          <div class="prose-sec"><Fragment set:html={s.html} /></div>
+          {cta && (
+            <p class="sec-actions btn-pair">
+              <a class="btn btn-pill btn-call" href={telHref} data-track="tel_click"><Icon name="phone" size={15} />{site.phone.display}</a>
+              <a class="btn btn-pill btn-cta" href={quoteHref}>Indhent tilbud</a>
+            </p>
+          )}
+        </div>
+        {img && <figure class="sec-img"><Img src={img.src} alt={img.alt} sizes="(max-width: 860px) 100vw, 640px" /></figure>}
+      </div>
+    </section>
+  );
+})}

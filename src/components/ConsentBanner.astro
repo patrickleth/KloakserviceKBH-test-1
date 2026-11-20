@@ -1,0 +1,34 @@
+---
+// Væksters eget samtykkebanner (bruges når Cookiebot ikke er sat op).
+// Google Consent Mode v2 med alle signaler, valg pr. kategori, "Afvis alle" på lige fod med "Accepter alle",
+// og man kan altid åbne indstillingerne igen via linket "Cookieindstillinger" i footeren.
+import { site, href } from '../lib/site';
+const cats = [
+  { key: 'preferences', name: 'Præferencer', text: 'Husker dine valg på siden, fx sprog eller indhold du har set.' },
+  { key: 'statistics', name: 'Statistik', text: 'Anonym måling af hvordan siden bruges (Google Analytics), så vi kan forbedre den.' },
+  { key: 'marketing', name: 'Marketing', text: 'Måling af annoncer og målretning hos Google og Meta. Bruges også til at vide, hvilke annoncer der giver henvendelser.' }
+];
+---
+<div class="consent" role="dialog" aria-modal="false" aria-labelledby="c-h" hidden data-consent-banner>
+  <div class="consent-main">
+    <p id="c-h" class="consent-h">Vi bruger cookies</p>
+    <p>Vi bruger cookies til statistik og markedsføring, så vi kan måle, hvad der virker. Nødvendige cookies er altid slået til. Du kan til enhver tid ændre dit valg med cookieknappen nederst til venstre. <a href={href(site.privacySlug)}>Læs vores cookiepolitik</a></p>
+    <div class="consent-btns">
+      <button type="button" class="btn btn-outline btn-sm" data-consent-action="settings">Tilpas</button>
+      <button type="button" class="btn btn-outline btn-sm" data-consent-action="deny">Afvis alle</button>
+      <button type="button" class="btn btn-primary btn-sm" data-consent-action="grant">Accepter alle</button>
+    </div>
+  </div>
+  <form class="consent-settings" hidden data-consent-form>
+    <p class="consent-h">Cookieindstillinger</p>
+    <label class="consent-cat"><span><strong>Nødvendige</strong><small>Får siden og formularen til at virke. Kan ikke slås fra.</small></span><input type="checkbox" checked disabled /></label>
+    {cats.map(c => (
+      <label class="consent-cat"><span><strong>{c.name}</strong><small>{c.text}</small></span><input type="checkbox" name={c.key} /></label>
+    ))}
+    <div class="consent-btns">
+      <button type="button" class="btn btn-outline btn-sm" data-consent-action="deny">Afvis alle</button>
+      <button type="submit" class="btn btn-outline btn-sm">Gem valg</button>
+      <button type="button" class="btn btn-primary btn-sm" data-consent-action="grant">Accepter alle</button>
+    </div>
+  </form>
+</div>

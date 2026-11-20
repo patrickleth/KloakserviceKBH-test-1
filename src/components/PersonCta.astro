@@ -1,0 +1,42 @@
+---
+// Mørkt bånd med kontaktpersonen: "Ring og få en fast pris". Tekst fra site.personCta, kan overskrives pr. side.
+import Img from './Img.astro';
+import Icon from './Icon.astro';
+import Stars from './Stars.astro';
+import { site, telHref } from '../lib/site';
+// Uden portræt af kontaktpersonen vises et arbejdsbillede ved siden af teksten, så sektionen aldrig står uden billede.
+interface Props { heading?: string; text?: string; quoteHref?: string; image?: { src: string; alt: string } }
+const { quoteHref = '#tilbud', image, ...props } = Astro.props;
+const p = { ...(site.personCta || {}), ...Object.fromEntries(Object.entries(props).filter(([, v]) => v)) };
+const first = site.contactPerson?.split(' ')[0];
+const r = site.rating;
+const person = site.brand.person;
+const pic = person ? null : (image || site.brand.work || site.gallery?.[0]);
+---
+<section class="person-cta" aria-labelledby="pcta-h">
+  <div class:list={['wrap', 'pcta-grid', { 'with-img': pic }]}>
+    {pic && (
+      <figure class="pcta-img">
+        <Img src={pic.src} alt={pic.alt} sizes="(max-width: 760px) 100vw, 560px" />
+        <span class="pcta-badge" aria-hidden="true"><Icon name="phone" size={20} /></span>
+      </figure>
+    )}
+    {person && (
+      <div class="pcta-photo">
+        <Img src={site.brand.person.src} alt={site.brand.person.alt} widths={[240, 360]} sizes="150px" width={150} height={150} />
+        <span class="pcta-badge" aria-hidden="true"><Icon name="phone" size={14} /></span>
+      </div>
+    )}
+    <div>
+      <p class="eyebrow">{site.name}</p>
+      <h2 id="pcta-h">{p.heading || 'Ring og få et uforpligtende tilbud'}</h2>
+      {first && <p class="pcta-sub">{first} svarer selv</p>}
+      <p>{p.text || site.phoneHours}</p>
+      <p class="pcta-actions btn-pair">
+        <a class="btn btn-pill btn-call" href={telHref} data-track="tel_click"><Icon name="phone" size={15} />{site.phone.display}</a>
+        <a class="btn btn-pill btn-cta" href={quoteHref}>Indhent tilbud</a>
+      </p>
+      {r && <Stars rating={r.score} label={r.count ? `${String(r.score).replace('.', ',')} i gennemsnit fra ${r.count} anmeldelser` : r.source} class="on-dark" />}
+    </div>
+  </div>
+</section>

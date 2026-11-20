@@ -1,0 +1,39 @@
+---
+// Header: logo til venstre, menu i midten, telefon-pille til højre.
+// Over en hero ligger den gennemsigtig med lys tekst og bliver hvid og fast, når man scroller (se site.ts).
+import { site, href, bySlug, telHref, IS_TEST, TEST_FORM } from '../lib/site';
+import Icon from './Icon.astro';
+interface Props { current?: string; minimal?: boolean; overHero?: boolean }
+const { current = '', minimal = false, overHero = false } = Astro.props;
+const pages = await bySlug();
+const exists = (s: string) => s in pages;
+const label = (s: string) => pages[s]?.data.navLabel ?? s;
+const desc = (s: string) => pages[s]?.data.menuText;
+---
+{IS_TEST && <div class="testbar">Testversion bygget af Vækster. Siden indekseres ikke af Google{TEST_FORM ? ', og henvendelser lander kun i CRM\'et.' : ', og formularen sender ikke noget.'}</div>}
+<a class="skip" href="#indhold">Spring til indhold</a>
+<header class:list={['site-header', { 'over-hero': overHero, 'no-nav': minimal }]} data-header>
+  <div class="wrap header-row">
+    <a class="logo" href="/" aria-label={`${site.name}, til forsiden`}>
+      <img class="logo-dark" src={site.brand.logo} alt="" width="180" height="56" />
+      {overHero && <img class="logo-light" src={site.brand.logoLight || site.brand.logo} alt="" width="180" height="56" data-invert={site.brand.logoLight ? undefined : 'true'} />}
+    </a>
+    {!minimal && (
+      <nav class="main-nav" aria-label="Hovedmenu">
+        <button class="menu-btn" type="button" aria-expanded="false" aria-controls="nav" aria-label="Åbn menu"><span class="burger" aria-hidden="true"><i></i><i></i><i></i></span></button>
+        <ul class="nav-list" id="nav">
+          {site.menu.map((m: any) => m.children ? (
+            <li class="has-sub"><details><summary>{m.label}</summary><ul>
+              {m.children.filter(exists).map((s: string) => <li><a href={href(s)} aria-current={s === current ? 'page' : undefined}><span>{label(s)}</span>{desc(s) && <small>{desc(s)}</small>}</a></li>)}
+            </ul></details></li>
+          ) : m.href ? (
+            <li><a href={m.href} aria-current={current && m.href === `/${current}/` ? 'page' : undefined}>{m.label}</a></li>
+          ) : exists(m.slug) ? (
+            <li><a href={href(m.slug)} aria-current={m.slug === current ? 'page' : undefined}>{m.label}</a></li>
+          ) : null)}
+        </ul>
+      </nav>
+    )}
+    <a class="btn btn-pill btn-call btn-sm header-phone" href={telHref} data-track="tel_click" aria-label={`Ring på ${site.phone.display}`}><Icon name="phone" size={15} /><span>{site.phone.display}</span></a>
+  </div>
+</header>

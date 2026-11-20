@@ -1,0 +1,76 @@
+---
+import '../styles/global.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import StickyCall from '../components/StickyCall.astro';
+import ConsentBanner from '../components/ConsentBanner.astro';
+import { site, abs, IS_TEST, FORM_TYPES, quoteLink } from '../lib/site';
+import { publicUrl } from '../lib/images';
+import { hasBlog as blogExists } from '../lib/config.mjs';
+
+interface Props {
+  title: string;
+  description: string;
+  slug: string;
+  type: string;
+  noindex?: boolean;
+  minimalHeader?: boolean;
+  ogImage?: string;
+  /** Siden starter med en fuldbredde hero; headeren lægges gennemsigtigt ovenpå. */
+  overHero?: boolean;
+  /** Takkeside: 'henvendelse' eller 'prisberegner'. Konverteringen sendes herfra. */
+  thanks?: string;
+}
+const { title, description, slug, type, noindex = false, minimalHeader = false, ogImage, overHero = false, thanks } = Astro.props;
+const quoteHref = await quoteLink(FORM_TYPES.includes(type));
+const canonical = abs(slug);
+const robots = IS_TEST || noindex ? 'noindex, nofollow' : 'index, follow';
+const gtmId = site.tracking.gtmId || '';
+const pixelId = site.tracking.metaPixelId || '';
+// basic: GTM indlæses først efter samtykke. advanced: GTM indlæses straks med alt afvist (Googles "avancerede" Consent Mode).
+const consentMode = site.tracking.consentMode === 'advanced' ? 'advanced' : 'basic';
+const cookiebot = site.consent.provider === 'cookiebot' && site.consent.cookiebotId;
+const hasBlog = blogExists();
+const og = publicUrl(ogImage || site.brand.hero?.src, site.domain);
+---
+<!doctype html>
+<html lang="da" data-gtm={gtmId} data-pixel={pixelId} data-cmode={consentMode} data-consent={cookiebot ? 'cookiebot' : 'intern'}>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{title}</title>
+  <meta name="description" content={description} />
+  <meta name="robots" content={robots} data-page-noindex={noindex ? 'true' : undefined} />
+  {slug !== '404' && <link rel="canonical" href={canonical} />}
+  <meta property="og:type" content={type === 'article' ? 'article' : 'website'} />
+  <meta property="og:locale" content="da_DK" />
+  <meta property="og:site_name" content={site.name} />
+  <meta property="og:title" content={title} />
+  <meta property="og:description" content={description} />
+  <meta property="og:url" content={canonical} />
+  {og && <meta property="og:image" content={og} />}
+  <meta name="theme-color" content={site.tokens.primaryDark} />
+  {site.brand.favicon && <link rel="icon" href={site.brand.favicon} type={site.brand.favicon.endsWith('.svg') ? 'image/svg+xml' : undefined} />}
+  {site.tracking.googleSiteVerification && <meta name="google-site-verification" content={site.tracking.googleSiteVerification} />}
+  {site.tracking.metaDomainVerification && <meta name="facebook-domain-verification" content={site.tracking.metaDomainVerification} />}
+
+  <!-- Consent Mode v2: alt afvist, indtil den besøgende har valgt. Skal stå før alle tags. -->
+  <script is:inline>document.documentElement.classList.add('js');window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('consent','default',{ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',analytics_storage:'denied',functionality_storage:'denied',personalization_storage:'denied',security_storage:'granted',wait_for_update:500});gtag('set','ads_data_redaction',true);</script>
+  {/* Cookiebot uden auto-blocking: GTM respekterer samtykket via Consent Mode, og auto-blocking ville blokere GTM selv. */}
+  {cookiebot && <script is:inline id="Cookiebot" src="https://consent.cookiebot.com/uc.js" data-cbid={site.consent.cookiebotId} type="text/javascript"></script>}
+  <slot name="head" />
+</head>
+<body class={`t-${type}`} data-thanks={thanks}>
+  <Header current={slug} minimal={minimalHeader} overHero={overHero} />
+  <main id="indhold">
+    <slot />
+  </main>
+  <Footer hasBlog={hasBlog} />
+  <StickyCall quoteHref={quoteHref} />
+  {!cookiebot && <ConsentBanner />}
+  <button type="button" class="cookie-fab" data-cookie-settings aria-label="Cookieindstillinger" title="Cookieindstillinger">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.4A9 9 0 1 1 11.6 3a3 3 0 0 0 3.6 3.6 3 3 0 0 0 4.2 4.2 3 3 0 0 0 1.6 1.6Z"/><circle cx="8.5" cy="9.5" r="1" fill="currentColor"/><circle cx="9" cy="15" r="1" fill="currentColor"/><circle cx="14.5" cy="15.5" r="1" fill="currentColor"/><circle cx="12.5" cy="11.5" r=".6" fill="currentColor"/></svg>
+  </button>
+  <script src="../scripts/site.ts"></script>
+</body>
+</html>

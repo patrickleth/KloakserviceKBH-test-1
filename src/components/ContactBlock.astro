@@ -1,0 +1,28 @@
+---
+// Kontaktsektion nederst: "Ring og tag en snak med ..." med kontaktliste til venstre og formularen til højre.
+// Har id="tilbud", så alle "Indhent tilbud"-knapper lander her.
+import Icon from './Icon.astro';
+import LeadForm from './LeadForm.astro';
+import { site, telHref } from '../lib/site';
+interface Props { slug: string; preselect?: string; leadtype?: string; formTitle?: string }
+const { slug, preselect, leadtype, formTitle } = Astro.props;
+const first = site.contactPerson?.split(' ')[0];
+const area = site.areaServed?.length ? (site.areaServed.length > 3 ? `Dækker ${site.areaServed.slice(0, 3).join(', ')} og omegn` : `Dækker ${site.areaServed.join(', ')}`) : '';
+---
+<section class="contact-sec" aria-labelledby="kontakt-h">
+  <div class="wrap contact-grid">
+    <div>
+      <h2 id="kontakt-h">{first ? `Ring og tag en snak med ${first}` : 'Ring og tag en snak med os'}</h2>
+      <p>Telefonen er den hurtigste vej til et svar. Eller beskriv kort opgaven i formularen, så vender vi tilbage.</p>
+      <ul class="contact-list">
+        <li><Icon name="phone" /><a href={telHref} data-track="tel_click">{site.phone.display}</a></li>
+        <li><Icon name="mail" /><a href={`mailto:${site.email}`} data-track="mailto_click">{site.email}</a></li>
+        <li><Icon name="pin" />{site.address.street}, {site.address.postal} {site.address.city}</li>
+        {area && <li><Icon name="map" />{area}</li>}
+        <li><Icon name="id" />CVR: {site.cvr}</li>
+      </ul>
+      {site.responseNote && <p class="note-badge"><Icon name="clock" size={15} />{site.responseNote}</p>}
+    </div>
+    <LeadForm slug={slug} preselect={preselect} leadtype={leadtype} title={formTitle} formId="tilbud" avatar={false} />
+  </div>
+</section>

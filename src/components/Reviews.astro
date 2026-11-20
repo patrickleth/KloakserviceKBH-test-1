@@ -1,0 +1,56 @@
+---
+// Anmeldelser som automatisk glidende bånd, der kører konstant (ingen pause ved hover og ingen pauseknap, efter Væksters ønske).
+// Hvert kort viser platformens ikon (src/assets/ikoner/) og stjerner i platformens farve: Trustpilot grøn, Google gul/orange, Facebook blå.
+// "source" på anmeldelsen styrer platformen; uden source bruges site.reviewsSource (standard: ingen platform, neutrale stjerner).
+// Står stille og kan rulles manuelt for dem, der har slået bevægelse fra i styresystemet.
+import { site } from '../lib/site';
+import icoTrustpilot from '../assets/ikoner/trustpilot.png';
+import icoGoogle from '../assets/ikoner/google.png';
+import icoFacebook from '../assets/ikoner/facebook.png';
+interface Props { heading?: string }
+const { heading = 'Anmeldelser fra vores kunder' } = Astro.props;
+const reviews = site.reviews;
+const PLATFORMS: Record<string, { name: string; icon: string }> = {
+  trustpilot: { name: 'Trustpilot', icon: icoTrustpilot.src },
+  google: { name: 'Google', icon: icoGoogle.src },
+  facebook: { name: 'Facebook', icon: icoFacebook.src }
+};
+const platformOf = (rv: any) => String(rv.source || site.reviewsSource || '').toLowerCase().replace(/\s.*/, '');
+// Fast fart uanset antal anmeldelser (inline-styles er blokeret af CSP, derfor klasser).
+const dur = reviews.length <= 4 ? 'd30' : reviews.length <= 7 ? 'd50' : reviews.length <= 11 ? 'd75' : 'd100';
+const STAR = 'M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.3l-5.9 3.3 1.3-6.6L2.5 9.4l6.6-.8z';
+---
+{reviews.length > 0 && (
+  <section class="reviews" aria-labelledby="anm-h">
+    <div class="wrap reviews-head">
+      <p id="anm-h" class="eyebrow">{heading}</p>
+    </div>
+    <div class:list={['marquee', dur]}>
+      {[0, 1].map(copy => (
+        <ul class="review-track" aria-hidden={copy === 1 ? 'true' : undefined}>
+          {reviews.map((rv: any) => {
+            const key = platformOf(rv);
+            const p = PLATFORMS[key];
+            const full = Math.round(rv.rating ?? 5);
+            return (
+              <li class:list={['review-card', `rv-${p ? key : 'neutral'}`]}>
+                <div class="rv-head">
+                  {p && <img class="rv-icon" src={p.icon} alt={p.name} width="40" height="40" loading="lazy" decoding="async" />}
+                  <div class="rv-who">
+                    <p class="rv-name">{rv.name}{rv.place && <span>, {rv.place}</span>}</p>
+                    <span class="rv-stars" role="img" aria-label={`${rv.rating ?? 5} ud af 5 stjerner${p ? ' på ' + p.name : ''}`}>
+                      {Array.from({ length: 5 }, (_, i) => <svg class:list={{ off: i >= full }} width="17" height="17" viewBox="0 0 24 24" aria-hidden="true"><path d={STAR} /></svg>)}
+                    </span>
+                    {rv.date && <p class="rv-date">{rv.date}</p>}
+                  </div>
+                </div>
+                {rv.title && <p class="review-title">{rv.title}</p>}
+                <blockquote><p>{rv.text}</p></blockquote>
+              </li>
+            );
+          })}
+        </ul>
+      ))}
+    </div>
+  </section>
+)}

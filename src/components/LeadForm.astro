@@ -1,0 +1,103 @@
+---
+// Tilbudsformular i et kort. To varianter (site.form.variant):
+//   "kort" (standard): ét trin som på de bedst konverterende sider: navn, e-mail, telefon, adresse, beskrivelse.
+//   "trin": tre trin med valg af ydelser.
+// Logikken ligger i src/scripts/site.ts, modtageren i netlify/functions/lead.mjs.
+import { site, abs, href, telHref, IS_TEST, TEST_FORM } from '../lib/site';
+import Img from './Img.astro';
+import FileField from './FileField.astro';
+interface Props { slug: string; preselect?: string; title?: string; leadtype?: string; formId?: string; avatar?: boolean }
+const { slug, preselect, title = site.form.title, leadtype = 'formular', formId = 'tilbud', avatar = true } = Astro.props;
+const variant = site.form.variant;
+const first = site.contactPerson?.split(' ')[0];
+const person = avatar && site.brand.person;
+// "Hvor har du fundet os?": site.form.foundOptions (sæt til [] for at skjule feltet).
+const foundOptions: string[] = site.form.foundOptions ?? ['Google', 'AI (ChatGPT, Gemini etc.)', 'Facebook/Instagram', 'Trustpilot', 'Anbefaling fra andre', 'Besøgt/brugt jer før', 'Andet'];
+---
+<form id={formId} class:list={['lead-form', 'form-card', `v-${variant}`]} action="/api/lead" method="post" enctype={site.form.files ? 'multipart/form-data' : undefined} data-test={IS_TEST && !TEST_FORM ? 'true' : 'false'} data-phone={site.phone.display} data-thanks={site.form.thankYou ? href(site.form.thankYou) : undefined} novalidate>
+  <div class="form-head">
+    <h2 class="form-title">{title}</h2>
+    {person && <Img class="avatar" src={person.src} alt={person.alt} widths={[128]} sizes="64px" width={64} height={64} />}
+  </div>
+
+  {variant === 'kort' ? (
+    <fieldset class="step" data-step="1">
+      <legend class="sr-only">Dine oplysninger og opgaven</legend>
+      <label><span class="sr-only">Navn</span><input name="navn" autocomplete="name" required maxlength="120" placeholder="Navn" /></label>
+      <div class="row2">
+        <label><span class="sr-only">E-mail</span><input name="email" type="email" autocomplete="email" required maxlength="160" placeholder="E-mail" /></label>
+        <label><span class="sr-only">Telefon</span><input name="telefon" type="tel" autocomplete="tel" inputmode="tel" required maxlength="30" placeholder="Telefon" /></label>
+      </div>
+      <label><span class="sr-only">Adresse</span><input name="adresse" autocomplete="street-address" maxlength="160" placeholder="Adresse" /></label>
+      <div class="row2 row-zip">
+        <label><span class="sr-only">Postnr.</span><input name="postnr" autocomplete="postal-code" inputmode="numeric" maxlength="8" placeholder="Postnr." /></label>
+        <label><span class="sr-only">By</span><input name="by" autocomplete="address-level2" maxlength="80" placeholder="By" /></label>
+      </div>
+      <label><span class="sr-only">Beskriv kort opgaven</span><textarea name="beskrivelse" rows="4" required maxlength="4000" placeholder="Beskriv kort opgaven..."></textarea></label>
+      {foundOptions.length > 0 && (
+        <label><span class="sr-only">Hvor har du fundet os?</span>
+          <select name="fundet" class="found-select">
+            <option value="" selected>Hvor har du fundet os?</option>
+            {foundOptions.map((o: string) => <option value={o}>{o}</option>)}
+          </select>
+        </label>
+      )}
+      {site.form.files && <FileField />}
+      {preselect && <input type="hidden" name="ydelser" value={preselect} />}
+    </fieldset>
+  ) : (
+    <>
+      <p class="progress" aria-live="polite"><span>Trin <b>1</b> af 3</span><span class="bar"><i></i></span></p>
+      <fieldset class="step" data-step="1">
+        <legend class="sr-only">Dine oplysninger</legend>
+        <label>Navn<input name="navn" autocomplete="name" required maxlength="120" /></label>
+        <div class="row2">
+          <label>Telefon<input name="telefon" type="tel" autocomplete="tel" inputmode="tel" required maxlength="30" /></label>
+          <label>E-mail<input name="email" type="email" autocomplete="email" required maxlength="160" /></label>
+        </div>
+        <label>Adresse <span class="opt">(valgfri)</span><input name="adresse" autocomplete="street-address" maxlength="160" /></label>
+        <div class="row2">
+          <label>Postnr. <span class="opt">(valgfri)</span><input name="postnr" autocomplete="postal-code" inputmode="numeric" maxlength="8" /></label>
+          <label>By <span class="opt">(valgfri)</span><input name="by" autocomplete="address-level2" maxlength="80" /></label>
+        </div>
+      </fieldset>
+      <fieldset class="step" data-step="2">
+        <legend>Hvilke ydelser ønsker du tilbud på?</legend>
+        <div class="checks">
+          {site.form.services.map((s: string) => (
+            <label class="check"><input type="checkbox" name="ydelser" value={s} checked={s === preselect} /> {s}</label>
+          ))}
+        </div>
+        <label>Andet, beskriv kort <span class="opt">(valgfri)</span><input name="andet" maxlength="200" /></label>
+      </fieldset>
+      <fieldset class="step" data-step="3">
+        <legend class="sr-only">Din opgave</legend>
+        <label>Beskriv din opgave<textarea name="beskrivelse" rows="5" required maxlength="4000"></textarea></label>
+        {foundOptions.length > 0 && (
+          <label>Hvor har du fundet os? <span class="opt">(valgfri)</span>
+            <select name="fundet"><option value="" selected>Vælg</option>{foundOptions.map((o: string) => <option value={o}>{o}</option>)}</select>
+          </label>
+        )}
+        {site.form.files && <FileField />}
+      </fieldset>
+    </>
+  )}
+
+  <div class="hp" aria-hidden="true"><label>Lad dette felt være tomt<input name="hp_kontrol" tabindex="-1" autocomplete="off" /></label></div>
+  <input type="hidden" name="side" value={abs(slug)} />
+  <input type="hidden" name="leadtype" value={leadtype} />
+  {site.form.thankYou && <input type="hidden" name="tak" value={href(site.form.thankYou)} />}
+  <input type="hidden" name="utm" /><input type="hidden" name="gclid" /><input type="hidden" name="fbclid" /><input type="hidden" name="t" />
+
+  <p class="form-error" role="alert" hidden></p>
+  <div class="form-nav">
+    {variant === 'trin' && <button type="button" class="btn btn-ghost-light" data-prev hidden>Forrige</button>}
+    {variant === 'trin' && <button type="button" class="btn btn-cta" data-next>Næste trin</button>}
+    <button type="submit" class="btn btn-cta btn-block" data-submit>{site.form.submitLabel}</button>
+  </div>
+  <p class="consent-note">Ved at sende accepterer du vores <a href={href(site.privacySlug)}>privatlivspolitik</a>.</p>
+  <div class="form-done" hidden tabindex="-1">
+    <h2 class="form-title">Tak, vi har modtaget din besked</h2>
+    <p>{first ? `${first} kontakter dig` : 'Vi kontakter dig'} hurtigst muligt. Haster det, så ring på <a href={telHref} data-track="tel_click">{site.phone.display}</a>.</p>
+  </div>
+</form>

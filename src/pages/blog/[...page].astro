@@ -1,0 +1,26 @@
+---
+// Bloggen bygges kun, når kunden har mindst ét udgivet indlæg i sites/<kunde>/blog/.
+import Base from '../../layouts/Base.astro';
+import Schema from '../../components/Schema.astro';
+import { getCollection } from 'astro:content';
+import { site, postPath } from '../../lib/site';
+import { hasBlog } from '../../lib/config.mjs';
+
+// Rest-parameter, så siden kun bygges, når kunden har indlæg (statiske ruter ignorerer getStaticPaths).
+export async function getStaticPaths() {
+  return hasBlog() ? [{ params: { page: undefined } }] : [];
+}
+const posts = (await getCollection('blog')).filter(p => !p.data.draft).sort((a, b) => +b.data.date - +a.data.date);
+const fmt = (d: Date) => d.toLocaleDateString('da-DK', { day: 'numeric', month: 'long', year: 'numeric' });
+const c = [{ name: 'Forside', slug: 'index' }, { name: 'Blog', slug: 'blog' }];
+---
+<Base title={`Blog | ${site.name}`} description={`Råd og viden fra ${site.name}.`} slug="blog" type="blog">
+  <Schema slot="head" kind="page" slug="blog" crumbs={c} />
+  <nav class="crumbs wrap" aria-label="Brødkrumme"><ol><li><a href="/">Forside</a></li><li aria-current="page">Blog</li></ol></nav>
+  <div class="wrap prose">
+    <h1>Blog</h1>
+    <ul class="post-list">
+      {posts.map(p => <li><a href={postPath(p.id, site)}><h2>{p.data.h1 || p.data.title}</h2><p class="meta">{fmt(p.data.date)}</p><p>{p.data.description}</p></a></li>)}
+    </ul>
+  </div>
+</Base>

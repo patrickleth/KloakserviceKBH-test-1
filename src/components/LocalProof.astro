@@ -1,0 +1,20 @@
+---
+// Lokal dokumentation på bysider: cases, anmeldelser, billeder og servicetid fra byen.
+import Img from './Img.astro';
+interface Props { city?: string; items: { kind: string; title?: string; text: string; src?: string; alt?: string }[] }
+const { city, items } = Astro.props;
+const kinds: Record<string, string> = { case: 'Opgave', anmeldelse: 'Anmeldelse', billede: 'Billede', servicetid: 'Servicetid' };
+---
+{items.length > 0 && (
+  <section class="local-proof" aria-labelledby="lok-h"><div class="wrap">
+    <h2 id="lok-h" class="center">Opgaver vi har løst i {city}</h2>
+    <ul class="proof-list">
+      {items.map(p => (
+        <li class="card">
+          {p.src && <Img src={p.src} alt={p.alt || p.title || ''} widths={[400, 800]} sizes="(max-width: 760px) 100vw, 380px" />}
+          <p class="kind">{kinds[p.kind] || p.kind}</p>{p.title && <h3>{p.title}</h3>}<p>{p.text}</p>
+        </li>
+      ))}
+    </ul>
+  </div></section>
+)}

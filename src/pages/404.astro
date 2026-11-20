@@ -1,0 +1,10 @@
+---
+import Base from '../layouts/Base.astro';
+import { site, telHref } from '../lib/site';
+---
+<Base title={`Siden findes ikke | ${site.name}`} description="Siden findes ikke." slug="404" type="legal" noindex>
+  <div class="wrap prose">
+    <h1>Siden findes ikke</h1>
+    <p>Adressen er flyttet eller skrevet forkert. Gå til <a href="/">forsiden</a>, eller ring på <a href={telHref} data-track="tel_click">{site.phone.display}</a>, så hjælper vi dig videre.</p>
+  </div>
+</Base>

@@ -1,0 +1,8 @@
+---
+import { site } from '../lib/site';
+---
+{site.stats.length > 0 && (
+  <section class="stats" aria-label="Nøgletal"><ul class="wrap stats-row">
+    {site.stats.map((s: any) => <li><strong>{s.value}</strong><span>{s.label}</span></li>)}
+  </ul></section>
+)}

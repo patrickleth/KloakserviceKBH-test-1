@@ -1,0 +1,41 @@
+---
+// Fuldbredde hero med baggrundsbillede, tillidselement, H1, USP'er, knapper og formularkort til højre.
+import Img from './Img.astro';
+import Icon from './Icon.astro';
+import CertLogos from './CertLogos.astro';
+import Stars from './Stars.astro';
+import LeadForm from './LeadForm.astro';
+import { site, telHref } from '../lib/site';
+interface Props {
+  h1: string; eyebrow?: string; intro?: string; image?: { src: string; alt: string }; usps?: string[];
+  slug: string; preselect?: string; leadtype?: string; formTitle?: string; form?: boolean; compact?: boolean; formId?: string;
+  video?: { src: string; poster?: string; type?: string };
+}
+const { h1, eyebrow, intro, image = site.brand.hero, usps = site.badges, slug, preselect, leadtype, formTitle, form = true, compact = false, formId = 'tilbud-top', video = site.brand.heroVideo } = Astro.props;
+const r = site.rating;
+---
+<section class:list={['hero', { 'hero-compact': compact }]}>
+  {image && <Img class="hero-bg" src={image.src} alt="" priority sizes="100vw" widths={[640, 960, 1280, 1920]} />}
+  {video && (
+    // Billedet ovenfor er plakat og LCP-element; videoen lægges ovenpå og starter lydløst. Stoppes ved "reducer bevægelse" (site.ts).
+    <video class="hero-video" autoplay muted loop playsinline preload="metadata" aria-hidden="true" poster={video.poster}>
+      <source src={video.src} type={video.type || (video.src.endsWith('.webm') ? 'video/webm' : 'video/mp4')} />
+    </video>
+  )}
+  <div class="hero-shade" aria-hidden="true"></div>
+  <div class="wrap hero-grid">
+    <div class="hero-copy">
+      {eyebrow && <p class="hero-eyebrow">{eyebrow}</p>}
+      {r && <Stars rating={r.score} label={r.source} class="on-dark" />}
+      <h1>{h1}</h1>
+      {intro && <p class="hero-intro">{intro}</p>}
+      {usps.length > 0 && <ul class="usps">{usps.map((u: string) => <li><Icon name="check" size={14} />{u}</li>)}</ul>}
+      <p class="hero-actions btn-pair">
+        <a class="btn btn-pill btn-call" href={telHref} data-track="tel_click"><Icon name="phone" size={16} />{site.phone.display}</a>
+        <a class="btn btn-pill btn-cta" href="#tilbud">Indhent tilbud</a>
+      </p>
+      <CertLogos variant="hero" />
+    </div>
+    {form && <div class="hero-form"><LeadForm slug={slug} preselect={preselect} leadtype={leadtype} title={formTitle} formId={formId} /></div>}
+  </div>
+</section>

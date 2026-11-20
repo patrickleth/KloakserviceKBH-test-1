@@ -1,0 +1,220 @@
+{
+  "name": "Skelbo's Tømrer & Montage",
+  "domain": "https://skelbostoemrer.dk",
+  "phone": {
+    "display": "28 51 20 92",
+    "e164": "+4528512092"
+  },
+  "email": "info@skelbostoemrer.dk",
+  "address": {
+    "street": "Ringmarken 11",
+    "postal": "4623",
+    "city": "Lille Skensved",
+    "country": "DK"
+  },
+  "cvr": "37686824",
+  "contactPerson": "Sebastian Skelbo",
+  "phoneHours": "Vi tager telefonen alle hverdage kl. 8-16.",
+  "areaServed": [
+    "Køge",
+    "Solrød",
+    "Greve",
+    "Roskilde",
+    "Taastrup"
+  ],
+  "businessType": "HomeAndConstructionBusiness",
+  "social": {
+    "facebook": "https://www.facebook.com/p/Skelbos-t%C3%B8mrer-montage-100081636695472/"
+  },
+  "tokens": {
+    "primary": "#3342A4",
+    "primaryDark": "#1A2152",
+    "primaryLight": "#99A1D2",
+    "tint": "#EEF0F8",
+    "accent": "#695234",
+    "radius": "6px",
+    "fontHeading": "bitter",
+    "fontBody": "inter"
+  },
+  "brand": {
+    "logo": "https://skelbostoemrer.dk/wp-content/uploads/2025/07/Skelbos-toemrer-logo.png",
+    "favicon": "https://skelbostoemrer.dk/wp-content/uploads/2025/07/Favicon-300x300.png",
+    "hero": {
+      "src": "https://skelbostoemrer.dk/wp-content/uploads/2025/07/toemrer-koege.jpg",
+      "alt": "Tømrer fra Skelbo's Tømrer & Montage i gang med træarbejde udendørs"
+    },
+    "person": {
+      "src": "https://skelbostoemrer.dk/wp-content/uploads/2025/07/sebastian-skelbo.jpg",
+      "alt": "Sebastian Skelbo, indehaver af Skelbo's Tømrer & Montage"
+    },
+    "work": {
+      "src": "https://skelbostoemrer.dk/wp-content/uploads/2025/07/hegn4.jpg",
+      "alt": "Tømrer monterer træbeklædning på væg med boremaskine"
+    }
+  },
+  "badges": [
+    "Tilbud inden for 24 timer",
+    "100% Gratis & uforpligtende besigtigelse",
+    "Fast pris - ingen skjulte tillæg"
+  ],
+  "ratingNote": "4,7 stjerner baseret på +46 anmeldelser",
+  "footerAbout": "Skelbo’s Tømrer & Montage er et familieejet firma der bygger på ordentlighed, klare aftaler og solidt håndværk. Vi møder til tiden, rydder op efter os og leverer faste priser. Vælg os hvis du vil have et projekt uden bøvl, og med garanti varig kvalitet.",
+  "reviews": [
+    {
+      "name": "Boliggården",
+      "place": "3000 Helsingør",
+      "rating": 5,
+      "source": "Anmeld Håndværker",
+      "text": "Vi har fået gennemgået og repereret vores legepladser inden legepladsinspektion. Aftale, udførelse og professionel tilgan til opgaven. Kompetente og erfarne tømrere."
+    },
+    {
+      "name": "Michael R. Ingvardsen",
+      "place": "2700 Brønshøj",
+      "rating": 5,
+      "source": "Anmeld Håndværker",
+      "text": "Isat nye vinduer. Spot on med hensyn til aftale og pris. Kommunikationen var perfekt og kunne følge med i hele processen. Åbne omkring hvad de gjorde samt stillede spørgsmål til hvordan vi ville have det."
+    },
+    {
+      "name": "Jan & Anella Nykvist",
+      "place": "2640 Hedehusene",
+      "rating": 5,
+      "source": "Anmeld Håndværker",
+      "text": "Da vi havde et ønske om at sløjfe vores entre og kun benytte bryggers dør til indgang kontaktede vi Skelbo’s Tømrer... Alt blev faktisk mere end forventet og vi kan varmt anbefale at få udført arbejde af Skelbo."
+    },
+    {
+      "name": "Jonas Samuelsen",
+      "place": "3650 Ølstykke",
+      "rating": 5,
+      "source": "Anmeld Håndværker",
+      "text": "Kan varmt anbefale Skelbos tømre. Vi har en ældre landejendom, hvor rettevinkler og simple opgaver er en luksus. Sebastian havde en en meget pragmatisk tilgang til opgaven, gode løsningsforslag, og hele forløbet blev fortaget med god fleksibilitet til vores ønsker."
+    },
+    {
+      "name": "Michael R. Ingvardsen",
+      "place": "2700 Brønshøj",
+      "rating": 5,
+      "source": "Anmeld Håndværker",
+      "text": "Udskiftet vindeuer og terrassedøre. Super god kommunikation og prisen var præcis som vi havde aftalt. Når der var tvivl så blev vi spurgt ad om hvilken løsning vi foretrak. Oprydning var perfekt så man kunne komme til når de havde været der. Bruger dem helt sikkert igen."
+    }
+  ],
+  "partners": [
+    {
+      "name": "Bygma",
+      "logo": "https://skelbostoemrer.dk/wp-content/uploads/2025/07/Bygma.png"
+    },
+    {
+      "name": "Lekolar",
+      "logo": "https://skelbostoemrer.dk/wp-content/uploads/2025/07/Lekolar.png"
+    },
+    {
+      "name": "Maxplay",
+      "logo": "https://skelbostoemrer.dk/wp-content/uploads/2025/07/Maxplay.png"
+    },
+    {
+      "name": "Naturleg",
+      "logo": "https://skelbostoemrer.dk/wp-content/uploads/2025/07/Naturleg.png"
+    },
+    {
+      "name": "VELFAC",
+      "logo": "https://skelbostoemrer.dk/wp-content/uploads/2025/07/Velfac.png"
+    }
+  ],
+  "form": {
+    "services": [
+      "Udskiftning af vinduer",
+      "Udskiftning af døre",
+      "Ny terrasse",
+      "Tilbygning",
+      "Garage/Carport",
+      "Renovering",
+      "Badeværelse",
+      "Legeplads",
+      "Serviceaftale",
+      "Andet"
+    ],
+    "title": "Få et gratis tilbud inden for 24 timer",
+    "variant": "kort"
+  },
+  "menu": [
+    {
+      "label": "Vi tilbyder",
+      "children": [
+        "badevaerelse",
+        "doere",
+        "garage",
+        "hegn",
+        "nye-lofter",
+        "nyt-gulv",
+        "nyt-tag",
+        "renoveringer",
+        "terrasse",
+        "tilbygning",
+        "velfac-vinduer",
+        "vinduer"
+      ]
+    },
+    {
+      "label": "Legepladser",
+      "children": [
+        "faldunderlag",
+        "legepladser",
+        "legeplads-sikkerhed",
+        "professionel-reparation-af-legeplads",
+        "legeplads-service-reparationsaftale"
+      ]
+    },
+    {
+      "label": "Om os",
+      "slug": "om-os"
+    },
+    {
+      "label": "Job",
+      "slug": "job"
+    },
+    {
+      "label": "Kontakt",
+      "slug": "kontakt"
+    }
+  ],
+  "footerLinks": [
+    "cookies",
+    "om-os",
+    "toemrer-solroed",
+    "toemrer-greve",
+    "kontakt"
+  ],
+  "privacySlug": "cookies",
+  "quoteSlug": "indhent-tilbud",
+  "tracking": {
+    "gtmId": "",
+    "metaDomainVerification": "",
+    "googleSiteVerification": ""
+  },
+  "consent": {
+    "provider": "intern",
+    "cookiebotId": ""
+  },
+  "csp": {
+    "extraScript": [],
+    "extraConnect": [],
+    "extraImg": []
+  },
+  "cityPolicy": "warn",
+  "redirects": [
+    {
+      "from": "/renovering/",
+      "to": "/renoveringer/",
+      "status": 301
+    }
+  ],
+  "rating": {
+    "score": 4.7,
+    "count": 46,
+    "source": "4,7 stjerner baseret på +46 anmeldelser"
+  },
+  "personCta": {
+    "heading": "Ring og få et fast tilbud",
+    "text": "Fortæl kort om opgaven, så kommer vi gerne forbi til en gratis og uforpligtende besigtigelse. Du får en fast pris uden skjulte tillæg."
+  },
+  "stickyLabel": "Vi tager telefonen hverdage kl. 8-16",
+  "responseNote": "Tilbud inden for 24 timer"
+}

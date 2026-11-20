@@ -1,0 +1,42 @@
+---
+// Struktureret data (JSON-LD). Ét samlet @graph pr. side.
+import { site, abs } from '../lib/site';
+import { publicUrl } from '../lib/images';
+
+interface Props {
+  kind: 'home' | 'service' | 'page' | 'article' | 'city';
+  slug: string;
+  name?: string;
+  crumbs?: { name: string; slug: string }[];
+  article?: { headline: string; description: string; date: Date; updated?: Date; image?: string };
+  city?: string;
+}
+const { kind, slug, name, crumbs = [], article, city } = Astro.props;
+
+const orgId = site.domain + '/#firma';
+const areaServed = (city ? [city] : site.areaServed || []).map((n: string) => ({ '@type': 'City', name: n }));
+const org: any = {
+  '@type': site.businessType || 'LocalBusiness',
+  '@id': orgId,
+  name: site.name,
+  url: site.domain + '/',
+  telephone: site.phone.e164,
+  email: site.email,
+  logo: publicUrl(site.brand.logo, site.domain),
+  image: publicUrl(site.brand.hero?.src, site.domain),
+  vatID: 'DK' + site.cvr,
+  address: { '@type': 'PostalAddress', streetAddress: site.address.street, postalCode: site.address.postal, addressLocality: site.address.city, addressCountry: site.address.country },
+  areaServed: (site.areaServed || []).map((n: string) => ({ '@type': 'City', name: n })),
+  sameAs: Object.values(site.social || {}).filter(Boolean)
+};
+const graph: any[] = [org];
+if (kind === 'home') graph.push({ '@type': 'WebSite', '@id': site.domain + '/#site', url: site.domain + '/', name: site.name, inLanguage: 'da-DK', publisher: { '@id': orgId } });
+if (kind === 'service' || kind === 'city') graph.push({ '@type': 'Service', name, serviceType: name, provider: { '@id': orgId }, areaServed, url: abs(slug) });
+if (kind === 'article' && article) graph.push({
+  '@type': 'BlogPosting', headline: article.headline, description: article.description, datePublished: article.date.toISOString().slice(0, 10),
+  dateModified: (article.updated || article.date).toISOString().slice(0, 10), author: { '@id': orgId }, publisher: { '@id': orgId }, mainEntityOfPage: abs(slug), inLanguage: 'da-DK', image: publicUrl(article.image, site.domain)
+});
+if (crumbs.length > 1) graph.push({ '@type': 'BreadcrumbList', itemListElement: crumbs.map((c, i) => ({ '@type': 'ListItem', position: i + 1, name: c.name, item: abs(c.slug) })) });
+const json = JSON.stringify({ '@context': 'https://schema.org', '@graph': graph }).replace(/</g, '\\u003c');
+---
+<script type="application/ld+json" set:html={json} />

@@ -1,0 +1,34 @@
+---
+// "Her kommer vi": de områder kunden dækker, med links til by-/ydelsessider (fx /slamsugning-frederiksberg/).
+// På en ydelsesside vises kun bysider for samme ydelse. På forsiden vises alle, grupperet pr. ydelse.
+import Icon from './Icon.astro';
+import { site, href, bySlug } from '../lib/site';
+interface Props { service?: string; exclude?: string; heading?: string; text?: string }
+const { service, exclude, heading, text } = Astro.props;
+const pages = await bySlug();
+const cities = Object.values(pages).filter((p: any) => p.data.type === 'city' && p.id !== exclude && !p.data.noindex);
+const groups = new Map<string, any[]>();
+for (const p of cities as any[]) {
+  const key = p.data.formService || 'Områder';
+  if (service && key.toLowerCase() !== service.toLowerCase()) continue;
+  if (!groups.has(key)) groups.set(key, []);
+  groups.get(key)!.push(p);
+}
+for (const list of groups.values()) list.sort((a, b) => (a.data.city || '').localeCompare(b.data.city || '', 'da'));
+const served = site.areaServed || [];
+---
+{(groups.size > 0 || served.length > 0) && (
+  <section class="areas-sec" aria-labelledby="omr-h">
+    <div class="wrap">
+      <p class="eyebrow center">Her kommer vi</p>
+      <h2 id="omr-h" class="center">{heading || (service ? `${service} i dit område` : `Vi dækker ${served.length ? served.slice(0, 2).join(' og ') : 'hele området'}`)}</h2>
+      {text && <p class="lead center">{text}</p>}
+      {groups.size > 0 ? [...groups].map(([name, list]) => (
+        <div class="area-group">
+          {!service && groups.size > 1 && <h3>{name}</h3>}
+          <ul class="area-list">{list.map((p: any) => <li><a href={href(p.id)}><Icon name="pin" size={15} />{p.data.city || p.data.navLabel}</a></li>)}</ul>
+        </div>
+      )) : <ul class="area-list">{served.map((c: string) => <li><span><Icon name="pin" size={15} />{c}</span></li>)}</ul>}
+    </div>
+  </section>
+)}

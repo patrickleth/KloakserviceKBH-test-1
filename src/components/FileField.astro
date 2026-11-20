@@ -1,0 +1,10 @@
+---
+// Vedhæft billeder eller PDF. Billeder gøres mindre i browseren (se site.ts), så de kan sendes med formularen.
+import Icon from './Icon.astro';
+---
+<div class="file-field">
+  <label class="file-btn"><Icon name="clip" size={17} /><span>Vedhæft billeder eller filer <span class="opt">(valgfrit)</span></span>
+    <input type="file" name="filer" multiple accept="image/*,.heic,.heif,application/pdf" class="sr-only" />
+  </label>
+  <ul class="file-list" aria-live="polite"></ul>
+</div>

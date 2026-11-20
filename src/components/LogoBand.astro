@@ -1,0 +1,21 @@
+---
+// Bevægende bånd med samarbejdspartnernes logoer. Ligger lige under hero og over anmeldelserne.
+// Logoer vises i fuld farve på fliser; "onDark": true giver en mørk flise til hvide/lyse logoer.
+import { site } from '../lib/site';
+interface Props { heading?: string }
+const { heading = 'Vi samarbejder med' } = Astro.props;
+const logos = (site.partners || []).filter((p: any) => p.logo);
+const dur = logos.length <= 5 ? 'd30' : logos.length <= 10 ? 'd50' : 'd75';
+---
+{logos.length > 0 && (
+  <section class="logo-band" aria-label={heading}>
+    <p class="eyebrow">{heading}</p>
+    <div class:list={['logo-marquee', dur]}>
+      {[0, 1].map(copy => (
+        <ul class="logo-track" aria-hidden={copy === 1 ? 'true' : undefined}>
+          {logos.map((p: any) => <li class:list={['logo-tile', { dark: p.onDark }]}><img src={p.logo} alt={copy === 1 ? '' : p.name} width="200" height="64" loading="lazy" decoding="async" /></li>)}
+        </ul>
+      ))}
+    </div>
+  </section>
+)}

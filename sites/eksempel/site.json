@@ -1,0 +1,199 @@
+{
+  "_kommentar": "FIKTIV DEMOKUNDE. Bruges som skabelon af npm run ny-kunde og til at afprøve alle funktioner (blog, byside med lokal dokumentation, landingsside, lokale billeder). Alle navne, numre og anmeldelser er opdigtede.",
+  "name": "Eksempel Tømrer ApS",
+  "domain": "https://eksempel.vaekster.dk",
+  "phone": {
+    "display": "12 34 56 78",
+    "e164": "+4512345678"
+  },
+  "email": "kontakt@eksempel.vaekster.dk",
+  "address": {
+    "street": "Eksempelvej 1",
+    "postal": "2650",
+    "city": "Hvidovre",
+    "country": "DK"
+  },
+  "cvr": "12345678",
+  "contactPerson": "Anna Eksempel",
+  "phoneHours": "Vi tager telefonen alle hverdage kl. 7-16.",
+  "areaServed": [
+    "Hvidovre",
+    "Brøndby",
+    "Valby"
+  ],
+  "businessType": "HomeAndConstructionBusiness",
+  "social": {},
+  "tokens": {
+    "primary": "#2E5E4E",
+    "primaryDark": "#1B3A30",
+    "primaryLight": "#8FB3A5",
+    "tint": "#EDF3F0",
+    "accent": "#8A5A2B",
+    "radius": "8px",
+    "fontHeading": "bitter",
+    "fontBody": "inter"
+  },
+  "brand": {
+    "logo": "/logo.svg",
+    "favicon": "/favicon.svg",
+    "hero": {
+      "src": "hero.jpg",
+      "alt": "Eksempelbillede af en tømrer på arbejde"
+    },
+    "person": {
+      "src": "person.jpg",
+      "alt": "Eksempelbillede af indehaveren"
+    },
+    "work": {
+      "src": "vaerksted.jpg",
+      "alt": "Eksempelbillede fra værkstedet"
+    },
+    "heroVideo": {
+      "src": "/hero.mp4"
+    }
+  },
+  "badges": [
+    "Svar inden for 24 timer",
+    "Gratis besigtigelse",
+    "Fast pris"
+  ],
+  "ratingNote": "Eksempel: 4,9 stjerner (opdigtet tal)",
+  "footerAbout": "Eksempel Tømrer ApS er en fiktiv virksomhed, som Vækster bruger til at vise og teste hjemmesideskabelonen.",
+  "reviews": [
+    {
+      "name": "Opdigtet kunde A",
+      "place": "Hvidovre",
+      "rating": 5,
+      "source": "Eksempel",
+      "text": "Dette er en opdigtet anmeldelse, der viser hvordan anmeldelser ser ud i skabelonen.",
+      "title": "Opdigtet: hurtigt og pænt"
+    },
+    {
+      "name": "Opdigtet kunde B",
+      "place": "Valby",
+      "rating": 5,
+      "source": "Eksempel",
+      "text": "Endnu en opdigtet anmeldelse. Rigtige kunder bruger ordrette anmeldelser fra fx Trustpilot eller Anmeld Håndværker.",
+      "title": "Opdigtet: fast pris holdt"
+    },
+    {
+      "name": "Opdigtet kunde C",
+      "place": "Brøndby",
+      "rating": 4,
+      "source": "Eksempel",
+      "text": "Opdigtet. Antal anmeldelser kan være alt fra nul og op; blokken skjules, hvis listen er tom.",
+      "title": "Opdigtet: god dialog"
+    }
+  ],
+  "partners": [],
+  "form": {
+    "services": [
+      "Terrasse",
+      "Tagarbejde",
+      "Andet"
+    ],
+    "title": "Få en fast pris på din opgave",
+    "variant": "kort"
+  },
+  "menu": [
+    {
+      "label": "Vi tilbyder",
+      "children": [
+        "terrasse",
+        "tagarbejde"
+      ]
+    },
+    {
+      "label": "Om os",
+      "slug": "om-os"
+    },
+    {
+      "label": "Kontakt",
+      "slug": "kontakt"
+    }
+  ],
+  "footerLinks": [
+    "cookies",
+    "om-os",
+    "toemrer-hvidovre",
+    "kontakt"
+  ],
+  "privacySlug": "cookies",
+  "quoteSlug": "indhent-tilbud",
+  "tracking": {
+    "gtmId": "",
+    "metaDomainVerification": "",
+    "googleSiteVerification": ""
+  },
+  "consent": {
+    "provider": "intern",
+    "cookiebotId": ""
+  },
+  "csp": {
+    "extraScript": [],
+    "extraConnect": [],
+    "extraImg": []
+  },
+  "cityPolicy": "noindex",
+  "redirects": [
+    {
+      "from": "/gammel-terrasse-side/",
+      "to": "/terrasse/",
+      "status": 301
+    }
+  ],
+  "rating": {
+    "score": 4.9,
+    "count": 120,
+    "source": "Eksempel (opdigtet tal)"
+  },
+  "personCta": {
+    "heading": "Ring og få en fast pris",
+    "text": "Bånd med kontaktpersonen. Teksten styres i site.json under personCta og kan overskrives pr. side."
+  },
+  "stats": [
+    {
+      "value": "15+",
+      "label": "års erfaring (opdigtet)"
+    },
+    {
+      "value": "1.200",
+      "label": "opgaver løst (opdigtet)"
+    },
+    {
+      "value": "4,9",
+      "label": "stjerner i snit (opdigtet)"
+    },
+    {
+      "value": "24 t",
+      "label": "svartid"
+    }
+  ],
+  "stickyLabel": "Vi tager telefonen hverdage 7-16",
+  "responseNote": "Vi svarer inden for 24 timer",
+  "gallery": [
+    {
+      "src": "vaerksted.jpg",
+      "alt": "Eksempelbillede fra værkstedet"
+    },
+    {
+      "src": "tag-1.jpg",
+      "alt": "Eksempelbillede af tagarbejde"
+    },
+    {
+      "src": "terrasse-2.jpg",
+      "alt": "Eksempelbillede af en terrasse med trin"
+    }
+  ],
+  "logoRows": [
+    {
+      "heading": "Som nævnt i (eksempel)",
+      "logos": [
+        {
+          "name": "Eksempelavis",
+          "logo": "/logo.svg"
+        }
+      ]
+    }
+  ]
+}

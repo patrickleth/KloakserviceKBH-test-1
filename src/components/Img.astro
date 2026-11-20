@@ -1,0 +1,33 @@
+---
+import { Picture } from 'astro:assets';
+import { resolveImage } from '../lib/images';
+
+interface Props {
+  src?: string;
+  alt: string;
+  widths?: number[];
+  sizes?: string;
+  class?: string;
+  priority?: boolean;
+  width?: number;
+  height?: number;
+}
+const { src, alt, widths = [480, 800, 1200, 1600], sizes = '(max-width: 760px) 100vw, 1200px', class: cls, priority = false, width = 1200, height = 800 } = Astro.props;
+const img = resolveImage(src);
+---
+{img && typeof img !== 'string' && (
+  <Picture
+    src={img}
+    alt={alt}
+    formats={['avif', 'webp']}
+    widths={widths.filter(w => w <= img.width).concat(widths.some(w => w > img.width) ? [img.width] : [])}
+    sizes={sizes}
+    class={cls}
+    loading={priority ? 'eager' : 'lazy'}
+    fetchpriority={priority ? 'high' : 'auto'}
+    decoding="async"
+  />
+)}
+{img && typeof img === 'string' && (
+  <img src={img} alt={alt} class={cls} width={width} height={height} loading={priority ? 'eager' : 'lazy'} fetchpriority={priority ? 'high' : 'auto'} decoding="async" />
+)}

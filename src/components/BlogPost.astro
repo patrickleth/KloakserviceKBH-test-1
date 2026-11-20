@@ -1,0 +1,36 @@
+---
+// Ét blogindlæg. Bruges af både /blog/<slug>/ og /<slug>/ (site.blog.permalink).
+import Base from '../layouts/Base.astro';
+import Schema from './Schema.astro';
+import Img from './Img.astro';
+import PersonCta from './PersonCta.astro';
+import type { CollectionEntry } from 'astro:content';
+import { render } from '../lib/markdown';
+import { site, href, bySlug, quoteLink, postPath } from '../lib/site';
+interface Props { post: CollectionEntry<'blog'>; posts: CollectionEntry<'blog'>[] }
+const { post, posts } = Astro.props;
+const d = post.data;
+const pages = await bySlug();
+const slug = postPath(post.id, site).replace(/^\/|\/$/g, '');
+const c = [{ name: 'Forside', slug: 'index' }, { name: 'Blog', slug: 'blog' }, { name: d.h1 || d.title, slug }];
+const fmt = (x: Date) => x.toLocaleDateString('da-DK', { day: 'numeric', month: 'long', year: 'numeric' });
+const relatedPages = d.related.filter(s => s in pages);
+const others = posts.filter(p => p.id !== post.id).sort((a, b) => +b.data.date - +a.data.date).slice(0, 3);
+---
+<Base title={d.title} description={d.description} slug={slug} type="article" ogImage={d.image?.src}>
+  <Schema slot="head" kind="article" slug={slug} crumbs={c} article={{ headline: d.h1 || d.title, description: d.description, date: d.date, updated: d.updated, image: d.image?.src }} />
+  <nav class="crumbs wrap" aria-label="Brødkrumme"><ol><li><a href="/">Forside</a></li><li><a href="/blog/">Blog</a></li><li aria-current="page">{d.h1 || d.title}</li></ol></nav>
+  <article class="wrap prose">
+    <h1>{d.h1 || d.title}</h1>
+    <p class="meta">Udgivet {fmt(d.date)}{d.updated && ` · opdateret ${fmt(d.updated)}`}</p>
+    {d.image && <figure><Img src={d.image.src} alt={d.image.alt} priority sizes="(max-width: 800px) 100vw, 760px" /></figure>}
+    <Fragment set:html={render(post.body || '')} />
+    {relatedPages.length > 0 && (
+      <aside><h2>Relaterede ydelser</h2><ul>{relatedPages.map(s => <li><a href={href(s)}>{pages[s].data.navLabel}</a></li>)}</ul></aside>
+    )}
+    {others.length > 0 && (
+      <aside><h2>Læs også</h2><ul>{others.map(p => <li><a href={postPath(p.id, site)}>{p.data.h1 || p.data.title}</a></li>)}</ul></aside>
+    )}
+  </article>
+  <PersonCta quoteHref={await quoteLink(false)} />
+</Base>

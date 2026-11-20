@@ -1,0 +1,66 @@
+---
+import Base from '../layouts/Base.astro';
+import Schema from '../components/Schema.astro';
+import Hero from '../components/Hero.astro';
+import Reviews from '../components/Reviews.astro';
+import Stats from '../components/Stats.astro';
+import ServiceGrid from '../components/ServiceGrid.astro';
+import Sections from '../components/Sections.astro';
+import Cards from '../components/Cards.astro';
+import PersonCta from '../components/PersonCta.astro';
+import LogoRows from '../components/LogoRows.astro';
+import LogoBand from '../components/LogoBand.astro';
+import AreasBlock from '../components/AreasBlock.astro';
+import Faq from '../components/Faq.astro';
+import ContactBlock from '../components/ContactBlock.astro';
+import Img from '../components/Img.astro';
+import { site, bySlug, metaDescription } from '../lib/site';
+import { faqFromBody } from '../lib/markdown';
+
+const pages = await bySlug();
+const page = pages['index'];
+if (!page) throw new Error('Kunden mangler forsiden: sites/<kunde>/pages/index.md');
+const d = page.data;
+const faq = d.faq?.length ? { heading: 'Ofte stillede spørgsmål', items: d.faq } : faqFromBody(page.body);
+// Ydelseskort: fra forsidens serviceCards, ellers automatisk fra menuens ydelser (første sætning af sidens intro).
+const firstSentence = (t = '') => (t.match(/^.*?[.!?](\s|$)/)?.[0] || t).trim();
+const cards = d.serviceCards?.length
+  ? d.serviceCards.filter(s => s.slug in pages)
+  : (site.menu.find((m: any) => m.children)?.children || []).filter((s: string) => s in pages).slice(0, 9)
+      .map((s: string) => ({ slug: s, title: pages[s].data.navLabel, text: firstSentence(pages[s].data.description || pages[s].data.intro) }));
+// Hvert kort får et baggrundsbillede: ydelsessidens eget (hero eller første billede), ellers et fra galleriet.
+const gallery = site.gallery || [];
+const usedImg = new Set<string>();
+const cardsWithImg = cards.map((c: any, i: number) => {
+  const pd = pages[c.slug]?.data;
+  let image = c.image || pd?.heroImage || pd?.images?.[0];
+  if (!image || usedImg.has(image.src)) image = gallery.find((g: any) => !usedImg.has(g.src)) || gallery[i % (gallery.length || 1)];
+  if (image) usedImg.add(image.src);
+  return { ...c, image };
+});
+const pctaImage = gallery.length > 1 ? gallery[gallery.length - 1] : undefined;
+---
+<Base title={d.title} description={metaDescription(d)} slug="index" type="home" noindex={d.noindex} overHero>
+  <Schema slot="head" kind="home" slug="index" />
+  <Hero h1={d.h1} eyebrow={d.eyebrow} intro={d.intro} image={d.heroImage || site.brand.hero} video={d.heroVideo || site.brand.heroVideo} usps={d.usps} slug="index" formTitle={d.formTitle} />
+  <LogoBand />
+  <Reviews />
+  <LogoRows />
+  <Stats />
+  <ServiceGrid items={cardsWithImg} />
+
+  {d.why && (
+    <section class="content-sec with-img"><div class="wrap split">
+      <div class="sec-text"><h2>{d.why.heading}</h2><div class="prose-sec">{d.why.body.map(b => <p>{b}</p>)}</div></div>
+      {site.brand.work && <figure class="sec-img"><Img src={site.brand.work.src} alt={site.brand.work.alt} sizes="(max-width: 860px) 100vw, 560px" /></figure>}
+    </div></section>
+  )}
+
+  {d.process && <Cards eyebrow="Sådan foregår det" heading={d.process.heading} lead={d.process.lead} items={d.process.steps} numbered />}
+  {d.cards && <Cards {...d.cards} />}
+  <PersonCta {...(d.personCta || {})} image={pctaImage} />
+  <Sections body={page.body} images={d.images} offset={1} />
+  <AreasBlock />
+  {faq && <Faq heading={faq.heading} items={faq.items} />}
+  <ContactBlock slug="index" formTitle={d.closing?.heading} />
+</Base>

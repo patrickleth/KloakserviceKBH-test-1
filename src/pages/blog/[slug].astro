@@ -1,0 +1,14 @@
+---
+// Blogindlæg på /blog/<slug>/ (standard). Med site.blog.permalink = "root" bygges de i stedet af src/pages/[post].astro.
+import BlogPost from '../../components/BlogPost.astro';
+import { getCollection } from 'astro:content';
+import { hasBlog, loadSite } from '../../lib/config.mjs';
+
+export async function getStaticPaths() {
+  if (!hasBlog() || loadSite().blog.permalink === 'root') return [];
+  const posts = (await getCollection('blog')).filter(p => !p.data.draft);
+  return posts.map(p => ({ params: { slug: p.id }, props: { post: p, posts } }));
+}
+const { post, posts } = Astro.props as any;
+---
+<BlogPost post={post} posts={posts} />

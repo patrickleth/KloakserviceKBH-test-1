@@ -1,0 +1,78 @@
+---
+// Prisside: prisliste som kort, akut udkald som eget bånd og afregningsregler som små felter.
+// Data fra sidens frontmatter: prices, urgent, billing (se docs/INDHOLDSFORMAT.md).
+import Icon from './Icon.astro';
+import { site, href, telHref } from '../lib/site';
+interface Props { prices?: any; urgent?: any; billing?: any; pages: Record<string, any> }
+const { prices, urgent, billing, pages } = Astro.props;
+const kr = (n: number) => n.toLocaleString('da-DK') + ' kr.';
+---
+{prices?.items?.length > 0 && (
+  <section class="price-sec" aria-labelledby="pris-h" id="priser">
+    <div class="wrap">
+      <div class="price-head">
+        <div>
+          <h2 id="pris-h">{prices.heading}</h2>
+          {prices.lead && <p class="lead">{prices.lead}</p>}
+        </div>
+        <p class="price-vat"><Icon name="check" size={16} /> Alle priser er inkl. moms</p>
+      </div>
+      {prices.notice && <p class="price-notice"><strong>Midlertidigt olietillæg:</strong> {prices.notice}</p>}
+      <ul class="price-grid">
+        {prices.items.map((it: any) => (
+          <li class:list={['price-card', { featured: it.tag }]}>
+            {it.tag && <span class="price-tag">{it.tag}</span>}
+            <h3>{it.name}</h3>
+            {it.price ? (
+              <p class="price-amount">{it.from && <small>Fra</small>}<strong>{kr(it.price)}</strong></p>
+            ) : (
+              <p class="price-amount quote"><strong>Pris efter besigtigelse</strong></p>
+            )}
+            {it.unit && <p class="price-unit">{it.unit}</p>}
+            {it.text && <p class="price-text">{it.text}</p>}
+            <div class="price-actions">
+              <a class="btn btn-cta btn-sm" href="#tilbud">Indhent tilbud</a>
+              {it.slug && it.slug in pages && <a class="price-more" href={href(it.slug)}>Læs mere <Icon name="arrow" size={14} /></a>}
+            </div>
+          </li>
+        ))}
+      </ul>
+      {prices.footnote && <p class="price-foot">{prices.footnote}</p>}
+    </div>
+  </section>
+)}
+
+{urgent && (
+  <section class="urgent-sec" aria-labelledby="akut-h">
+    <div class="wrap"><div class="urgent-card">
+      <div class="urgent-main">
+        <p class="urgent-pill"><span class="pulse" aria-hidden="true"></span> Døgnservice</p>
+        <h2 id="akut-h">{urgent.heading}</h2>
+        <p class="urgent-price"><small>Fra</small> <strong>{kr(urgent.price)}</strong></p>
+        {urgent.unit && <p class="urgent-unit">{urgent.unit}</p>}
+        {urgent.extra && <p class="urgent-extra">{urgent.extra}</p>}
+        <a class="btn btn-pill btn-call urgent-btn" href={telHref} data-track="tel_click"><Icon name="phone" size={17} />Ring {site.phone.display}</a>
+      </div>
+      {urgent.times?.length > 0 && (
+        <div class="urgent-times">
+          <h3><Icon name="clock" size={18} /> Udkaldspris gælder</h3>
+          <dl>{urgent.times.map((t: any) => <div><dt>{t.label}</dt><dd>{t.value}</dd></div>)}</dl>
+          {urgent.text && <p>{urgent.text}</p>}
+        </div>
+      )}
+    </div></div>
+  </section>
+)}
+
+{billing?.items?.length > 0 && (
+  <section class="billing-sec" aria-labelledby="afr-h">
+    <div class="wrap">
+      <h2 id="afr-h" class="center">{billing.heading}</h2>
+      <ul class="billing-grid">
+        {billing.items.map((b: any) => (
+          <li><span class="billing-ico"><Icon name={(b.icon || 'check') as any} size={22} /></span><h3>{b.title}</h3><p>{b.text}</p></li>
+        ))}
+      </ul>
+    </div>
+  </section>
+)}
