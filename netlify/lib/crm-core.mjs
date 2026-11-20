@@ -8,7 +8,17 @@
 //   nulstil/<sha256> engangslink til ny adgangskode (gyldigt i 30 minutter)
 import { parseUsers, verifyPassword, hashPassword, signSession, readSession, getCookie, sessionCookie, throttleKey, passVersion, sha256, newToken } from './admin-auth.mjs';
 
-export const STATUSES = ['ny', 'kontaktet', 'tilbud', 'vundet', 'tabt', 'arkiveret'];
+// Standard-stages. Kan tilpasses i CRM'et (gemmes i config/stages). "arkiveret" findes altid og vises ikke på boardet.
+export const DEFAULT_STAGES = [
+  { id: 'ny', navn: 'Ny', farve: '#87909e' },
+  { id: 'kontaktet', navn: 'Kontaktet', farve: '#1090e0' },
+  { id: 'tilbud', navn: 'Tilbud sendt', farve: '#8b5cf6' },
+  { id: 'vundet', navn: 'Vundet', farve: '#0f9d58' },
+  { id: 'tabt', navn: 'Tabt', farve: '#d33d44' }
+];
+export const STATUSES = [...DEFAULT_STAGES.map(s => s.id), 'arkiveret'];
+const PRIORITIES = ['', 'haster', 'hoej', 'normal', 'lav'];
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const EDITABLE = { navn: 120, telefon: 30, email: 160, adresse: 160, postnr: 8, by: 80, beskrivelse: 4000, ydelse: 120, ansvarlig: 60, fundet: 60 };
 const MAX_FAILS = 5;            // forkerte logins før lås
 const LOCK_MS = 15 * 60e3;      // låst i 15 minutter
@@ -35,7 +45,7 @@ export function crmStore(store) {
         filer.push({ n, navn: f.name, type: f.type, kb: Math.round(f.size / 1024) });
       }
       const rec = {
-        id: lead.id, status: 'ny', kilde: 'formular',
+        id: lead.id, status: (await store.get('config/stages', { type: 'json' }))?.[0]?.id || 'ny', kilde: 'formular', naesteKontakt: '', prioritet: '',
         navn: lead.navn, telefon: lead.telefon, email: lead.email, adresse: lead.adresse, postnr: lead.postnr, by: lead.by,
         ydelse: [...(lead.ydelser || []), lead.andet].filter(Boolean).join(', '), beskrivelse: lead.beskrivelse,
         fundet: lead.fundet, side: lead.side, leadtype: lead.leadtype, utm: lead.utm, gclid: lead.gclid, fbclid: lead.fbclid,
@@ -158,16 +168,32 @@ export async function handleAdmin(req, env, deps) {
   const me = session.u;
   const stamp = hvad => ({ ts: new Date(now).toISOString(), af: me, hvad });
 
-  if (route === 'me' && method === 'GET') return json(200, { ok: true, bruger: me, statuser: STATUSES });
+  if (route === 'me' && method === 'GET') return json(200, { ok: true, bruger: me });
+  const validStatus = async st => st === 'arkiveret' || (await loadConfig(store)).stages.some(x => x.id === st);
+  // Felter ud over de faste tekstfelter: næste kontaktdato og prioritet.
+  const applyExtra = (rec, b) => {
+    if (b.naesteKontakt !== undefined) {
+      const v = b.naesteKontakt ? String(b.naesteKontakt) : '';
+      if (v && !DATE_RE.test(v)) return 'Ugyldig dato';
+      if (v !== (rec.naesteKontakt || '')) { rec.naesteKontakt = v; rec.historik.push(stamp(v ? `Næste kontakt: ${v}` : 'Fjernede næste kontakt')); }
+    }
+    if (b.prioritet !== undefined) {
+      if (!PRIORITIES.includes(b.prioritet)) return 'Ugyldig prioritet';
+      if (b.prioritet !== (rec.prioritet || '')) { rec.prioritet = b.prioritet; rec.historik.push(stamp(`Prioritet: ${b.prioritet || 'ingen'}`)); }
+    }
+    return '';
+  };
 
   if (route === 'leads' && method === 'GET') return json(200, { ok: true, leads: await crm.list() });
 
   if (route === 'leads' && method === 'POST') {
     let b; try { b = await readJson(req); } catch { return json(400, { ok: false, error: 'format' }); }
-    const rec = { id: newId(now), status: STATUSES.includes(b.status) ? b.status : 'ny', kilde: 'manuel', vaerdi: null, filer: [], noter: [], side: '', historik: [stamp('Oprettet manuelt')], oprettet: new Date(now).toISOString(), opdateret: new Date(now).toISOString() };
+    const firstStage = (await loadConfig(store)).stages[0]?.id || 'ny';
+    const rec = { id: newId(now), status: b.status && await validStatus(b.status) ? b.status : firstStage, kilde: 'manuel', naesteKontakt: '', prioritet: '', vaerdi: null, filer: [], noter: [], side: '', historik: [stamp('Oprettet manuelt')], oprettet: new Date(now).toISOString(), opdateret: new Date(now).toISOString() };
     for (const [k, max] of Object.entries(EDITABLE)) rec[k] = clean(b[k], max);
     if (!rec.navn) return json(400, { ok: false, error: 'felter', message: 'Navn mangler' });
     if (b.vaerdi !== undefined && b.vaerdi !== '' && Number.isFinite(Number(b.vaerdi))) rec.vaerdi = Math.max(0, Math.round(Number(b.vaerdi)));
+    const bad = applyExtra(rec, b); if (bad) return json(400, { ok: false, error: 'felter', message: bad });
     if (b.note) rec.noter.push({ ts: rec.oprettet, af: me, tekst: clean(b.note, 2000) });
     await crm.put(rec);
     return json(201, { ok: true, lead: rec });
@@ -179,7 +205,7 @@ export async function handleAdmin(req, env, deps) {
     if (!rec) return json(404, { ok: false, error: 'findes-ikke' });
     let b; try { b = await readJson(req); } catch { return json(400, { ok: false, error: 'format' }); }
     if (b.status !== undefined) {
-      if (!STATUSES.includes(b.status)) return json(400, { ok: false, error: 'status' });
+      if (!(await validStatus(b.status))) return json(400, { ok: false, error: 'status' });
       if (b.status !== rec.status) { rec.historik.push(stamp(`Status: ${rec.status} → ${b.status}`)); rec.status = b.status; }
     }
     for (const [k, max] of Object.entries(EDITABLE)) if (b[k] !== undefined) {
@@ -191,6 +217,7 @@ export async function handleAdmin(req, env, deps) {
       if (v !== null && !Number.isFinite(v)) return json(400, { ok: false, error: 'vaerdi' });
       rec.vaerdi = v === null ? null : Math.max(0, Math.round(v));
     }
+    const bad = applyExtra(rec, b); if (bad) return json(400, { ok: false, error: 'felter', message: bad });
     if (b.note) rec.noter.push({ ts: new Date(now).toISOString(), af: me, tekst: clean(b.note, 2000) });
     rec.historik = rec.historik.slice(-200);
     rec.opdateret = new Date(now).toISOString();
@@ -211,5 +238,59 @@ export async function handleAdmin(req, env, deps) {
     } });
   }
 
+  // ---------- tilpasning: stages og gemte visninger (fælles for alle brugere på sitet) ----------
+  if (route === 'config' && method === 'GET') return json(200, { ok: true, ...(await loadConfig(store)) });
+  if (route === 'config/stages' && method === 'PUT') {
+    let b; try { b = await readJson(req); } catch { return json(400, { ok: false, error: 'format' }); }
+    const stages = sanitizeStages(b.stages);
+    if (!stages) return json(400, { ok: false, error: 'stages', message: 'Ugyldige stages. Der skal være 1 til 12 med navn og farve.' });
+    const keep = new Set([...stages.map(s => s.id), 'arkiveret']);
+    const orphans = (await crm.list()).filter(l => !keep.has(l.status));
+    if (orphans.length) return json(409, { ok: false, error: 'i-brug', message: `${orphans.length} lead(s) ligger stadig i en stage, du vil fjerne. Flyt dem først.` });
+    await store.setJSON('config/stages', stages);
+    return json(200, { ok: true, stages });
+  }
+  if (route === 'config/views' && method === 'PUT') {
+    let b; try { b = await readJson(req); } catch { return json(400, { ok: false, error: 'format' }); }
+    const views = sanitizeViews(b.views);
+    await store.setJSON('config/views', views);
+    return json(200, { ok: true, views });
+  }
+
   return json(404, { ok: false, error: 'ukendt' });
+}
+
+async function loadConfig(store) {
+  const stages = (await store.get('config/stages', { type: 'json' })) || DEFAULT_STAGES;
+  const views = (await store.get('config/views', { type: 'json' })) || [];
+  return { stages, views };
+}
+
+function sanitizeStages(list) {
+  if (!Array.isArray(list) || list.length < 1 || list.length > 12) return null;
+  const seen = new Set();
+  const out = [];
+  for (const s of list) {
+    const navn = clean(s?.navn, 40);
+    const farve = /^#[0-9a-f]{6}$/i.test(s?.farve || '') ? s.farve : '#87909e';
+    let id = clean(s?.id, 30).toLowerCase().replace(/[^a-z0-9-]/g, '');
+    if (!id) id = navn.toLowerCase().normalize('NFKD').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 30) || 'stage';
+    while (seen.has(id) || id === 'arkiveret') id += '-2';
+    if (!navn) return null;
+    seen.add(id); out.push({ id, navn, farve });
+  }
+  return out;
+}
+
+function sanitizeViews(list) {
+  if (!Array.isArray(list)) return [];
+  const keys = ['status', 'kilde', 'ansvarlig', 'fundet', 'kontakt', 'periode', 'prioritet'];
+  return list.slice(0, 20).map((v, i) => ({
+    id: clean(v?.id, 30).replace(/[^a-z0-9-]/gi, '') || `v${i}`,
+    navn: clean(v?.navn, 40) || 'Visning',
+    mode: v?.mode === 'list' ? 'list' : 'board',
+    group: v?.group === 'none' ? 'none' : 'status',
+    sort: { key: clean(v?.sort?.key, 20), dir: v?.sort?.dir === 'asc' ? 'asc' : 'desc' },
+    filters: Object.fromEntries(keys.map(k => [k, Array.isArray(v?.filters?.[k]) ? v.filters[k].slice(0, 20).map(x => clean(x, 60)) : []]))
+  }));
 }

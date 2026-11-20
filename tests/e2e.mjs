@@ -54,8 +54,9 @@ async function test(name, fn, opts = {}) {
         if (r === 'login') { adminIn = true; return route.fulfill({ status: 200, contentType: 'application/json', body: '{"ok":true}' }); }
         if (!adminIn) return route.fulfill({ status: 401, contentType: 'application/json', body: '{"ok":false}' });
         if (r === 'me') return route.fulfill({ status: 200, contentType: 'application/json', body: '{"ok":true,"bruger":"test"}' });
+        if (r === 'config') return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ ok: true, stages: [{ id: 'ny', navn: 'Ny', farve: '#87909e' }, { id: 'kontaktet', navn: 'Kontaktet', farve: '#1090e0' }, { id: 'tilbud', navn: 'Tilbud sendt', farve: '#8b5cf6' }], views: [] }) });
         if (r === 'leads' && method === 'GET') return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ ok: true, leads: adminLeads }) });
-        if (r.startsWith('leads/') && method === 'PATCH') { const l = adminLeads.find(x => x.id === r.slice(6)); Object.assign(l, JSON.parse(route.request().postData())); return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ ok: true, lead: l }) }); }
+        if (r.startsWith('leads/') && method === 'PATCH') { const l = adminLeads.find(x => x.id === r.slice(6)); const b = JSON.parse(route.request().postData()); if (b.note) { l.noter.push({ ts: new Date().toISOString(), af: 'test', tekst: b.note }); delete b.note; } Object.assign(l, b); return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ ok: true, lead: l }) }); }
       }
       return route.continue();
     }
@@ -315,21 +316,34 @@ await test('Ingen indholdssektion uden billede', async ({ page }) => {
   }
 });
 
-await test('CRM: login, board og ingen kørsel af indsendt HTML', async ({ page }) => {
+await test('CRM: login, board, liste, autosave og noter uden at lukke vinduet', async ({ page }) => {
   let alerted = false; page.on('dialog', d => { alerted = true; d.dismiss(); });
   await page.goto(base + '/administrator-system/');
   assert.equal(await page.getAttribute('meta[name=robots]', 'content'), 'noindex, nofollow');
   await page.waitForSelector('[data-login]');
-  await page.fill('[name=bruger]', 'test'); await page.fill('[name=kode]', 'hemmelig-kode-123');
-  await page.click('[data-login] button');
+  await page.fill('[data-login] [name=bruger]', 'test'); await page.fill('[data-login] [name=kode]', 'hemmelig-kode-123');
+  await page.click('[data-login] button[type=submit]');
   await page.waitForSelector('.lcard');
-  assert.equal(await page.locator('.col-ny .lcard').count(), 1);
+  assert.equal(await page.locator('[data-col=ny] .lcard').count(), 1);
   assert.match(await page.textContent('.lcard .lc-name'), /<img/);
   assert.equal(alerted, false);
+  // åbn, skift status (autosave), skriv note og send, vinduet forbliver åbent
   await page.click('.lcard');
-  await page.selectOption('[data-status]', 'kontaktet');
-  await page.click('[data-save]');
-  await page.waitForSelector('.col-kontaktet .lcard');
+  await page.selectOption('.task .status-sel', 'kontaktet');
+  await page.waitForSelector('.task .saved.st-saved');
+  await page.fill('.task .note-input', 'Ringet op');
+  await page.click('.task .composer button');
+  await page.waitForSelector('.task .act.note');
+  assert.ok(await page.isVisible('.task'), 'vinduet skal blive åbent efter gem og note');
+  await page.click('.task .x');
+  await page.waitForSelector('[data-col=kontaktet] .lcard');
+  // nyt lead kan lukkes uden navn
+  await page.click('[data-new]');
+  await page.click('.task .x');
+  assert.ok(!(await page.isVisible('.task')));
+  // listevisning
+  await page.click('.tab >> text=Liste');
+  await page.waitForSelector('.list .row:not(.head)');
 });
 
 await test('Landingsside: noindex, ingen menu og fast ring-knap på mobil', async ({ page }) => {

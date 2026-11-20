@@ -167,3 +167,26 @@ test('nulstillingslink udløber efter 30 minutter', async () => {
   const r = await handleAdmin(req('nulstil', { method: 'POST', body: { token, kode: 'en-helt-ny-kode-2026' } }), env3, { store, now: () => t0 + 31 * 60e3 });
   assert.equal(r.status, 400);
 });
+
+test('stages kan tilpasses, men ikke fjernes mens der ligger leads i dem', async () => {
+  const store = memStore();
+  const cookie = await login(store);
+  const { lead } = await (await handleAdmin(req('leads', { method: 'POST', cookie, body: { navn: 'A', naesteKontakt: '2026-12-01', prioritet: 'haster' } }), env, { store })).json();
+  assert.equal(lead.naesteKontakt, '2026-12-01'); assert.equal(lead.prioritet, 'haster');
+  let r = await handleAdmin(req('config/stages', { method: 'PUT', cookie, body: { stages: [{ id: 'kontaktet', navn: 'Kontaktet', farve: '#000000' }] } }), env, { store });
+  assert.equal(r.status, 409);
+  r = await handleAdmin(req('config/stages', { method: 'PUT', cookie, body: { stages: [{ id: 'ny', navn: 'Indbakke', farve: '#123456' }, { navn: 'Besigtigelse', farve: '#abcdef' }] } }), env, { store });
+  assert.equal(r.status, 200);
+  const { stages } = await r.json();
+  assert.equal(stages[1].id, 'besigtigelse');
+  r = await handleAdmin(req(`leads/${lead.id}`, { method: 'PATCH', cookie, body: { status: 'besigtigelse' } }), env, { store });
+  assert.equal(r.status, 200);
+  r = await handleAdmin(req(`leads/${lead.id}`, { method: 'PATCH', cookie, body: { status: 'tilbud' } }), env, { store });
+  assert.equal(r.status, 400, 'gammel stage findes ikke længere');
+  r = await handleAdmin(req(`leads/${lead.id}`, { method: 'PATCH', cookie, body: { naesteKontakt: 'i morgen' } }), env, { store });
+  assert.equal(r.status, 400);
+  r = await handleAdmin(req('config/views', { method: 'PUT', cookie, body: { views: [{ id: 'v1', navn: 'Haster', mode: 'list', filters: { prioritet: ['haster'] }, sort: { key: 'naesteKontakt', dir: 'asc' } }] } }), env, { store });
+  const cfg = await (await handleAdmin(req('config', { cookie }), env, { store })).json();
+  assert.equal(cfg.views[0].filters.prioritet[0], 'haster');
+  assert.equal(cfg.stages.length, 2);
+});
