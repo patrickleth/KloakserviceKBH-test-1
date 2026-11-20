@@ -2,7 +2,14 @@
 // Lokale billeder optimeres ved bygning til AVIF/WebP i flere størrelser.
 // Fjern-URL'er (typisk den gamle WordPress-side under migrering) vises som de er.
 import type { ImageMetadata } from 'astro';
-import { KUNDE } from './config.mjs';
+import { KUNDE, REMOTE_OPT, loadSite } from './config.mjs';
+
+const OWN_HOST = new URL(loadSite().domain).hostname.replace(/^www\./, '');
+/** Kan dette fjernbillede optimeres ved bygning? Kun billeder fra kundens eget domæne, og kun når REMOTE_OPT er slået til. */
+export function remoteOptimizable(src: string) {
+  if (!REMOTE_OPT || !/^https:\/\//.test(src)) return false;
+  try { return new URL(src).hostname.replace(/^www\./, '') === OWN_HOST && /\.(jpe?g|png|webp|avif)(\?|$)/i.test(src); } catch { return false; }
+}
 
 // '@kundebilleder' peger på sites/<KUNDE>/images (se astro.config.mjs). Nøglerne normaliseres til stien efter images/.
 const raw = import.meta.glob<{ default: ImageMetadata }>('@kundebilleder/**/*.{jpg,jpeg,png,webp,avif}', { eager: true });

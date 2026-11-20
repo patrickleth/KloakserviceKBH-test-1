@@ -8,7 +8,7 @@
 // og billedet af ydelsen toner ind til højre, når man holder musen over den.
 import { getImage } from 'astro:assets';
 import { site, href, bySlug, telHref, IS_TEST, TEST_FORM } from '../lib/site';
-import { resolveImage } from '../lib/images';
+import { resolveImage, remoteOptimizable } from '../lib/images';
 import { iconFor } from '../lib/icons';
 import Icon from './Icon.astro';
 import LineIcon from './LineIcon.astro';
@@ -31,7 +31,7 @@ const gallery = site.gallery || [];
 async function smallSrc(src?: string) {
   const r = resolveImage(src);
   if (!r) return undefined;
-  if (typeof r === 'string') return r;
+  if (typeof r === 'string') return remoteOptimizable(r) ? (await getImage({ src: r, inferSize: true, width: 640, format: 'webp' })).src : r;
   return (await getImage({ src: r, width: 640, format: 'webp' })).src;
 }
 async function itemOf(s: string, i: number) {

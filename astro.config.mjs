@@ -3,7 +3,7 @@
 import { defineConfig } from 'astro/config';
 import fs from 'node:fs';
 import path from 'node:path';
-import { KUNDE, SITE_DIR, loadSite, writeTokens, assertNoDemo } from './src/lib/config.mjs';
+import { KUNDE, SITE_DIR, loadSite, writeTokens, assertNoDemo, REMOTE_OPT } from './src/lib/config.mjs';
 import vaekster from './src/integrations/vaekster.mjs';
 
 const site = loadSite();
@@ -29,8 +29,9 @@ export default defineConfig({
     assets: 'assets'
   },
   image: {
-    // Fjernbilleder (fx fra den gamle WordPress-side under migrering) hentes ikke ved bygning.
-    remotePatterns: []
+    // Fjernbilleder fra kundens nuværende side (under migrering) hentes og optimeres til AVIF/WebP ved bygning på Netlify.
+    // Lokalt (uden netadgang) vises de, som de er. Sæt OPTIMIZE_REMOTE=true for at tvinge det.
+    remotePatterns: REMOTE_OPT ? [{ protocol: 'https', hostname: new URL(site.domain).hostname }, { protocol: 'https', hostname: 'www.' + new URL(site.domain).hostname.replace(/^www\./, '') }] : []
   },
   // Alias til den valgte kundes billedmappe, så kun den kundes billeder kommer med i bygningen.
   vite: { resolve: { alias: { '@kundebilleder': imagesDir } } },
