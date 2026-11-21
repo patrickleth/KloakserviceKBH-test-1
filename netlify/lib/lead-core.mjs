@@ -49,7 +49,7 @@ async function withTimeout(fetchFn, url, init, ms = TIMEOUT_MS) {
 
 function mailgun(env, fetchFn) {
   const base = (env.MAILGUN_REGION || 'eu').toLowerCase() === 'us' ? 'https://api.mailgun.net' : 'https://api.eu.mailgun.net';
-  const auth = 'Basic ' + Buffer.from('api:' + env.MAILGUN_API_KEY).toString('base64');
+  const auth = 'Basic ' + Buffer.from('api:' + String(env.MAILGUN_API_KEY).trim()).toString('base64');
   return async (fields, ms, attachments = []) => {
     // Med vedhæftede filer skal Mailgun have multipart; ellers almindelig formular-kodning.
     const body = attachments.length ? new FormData() : new URLSearchParams();
@@ -168,6 +168,8 @@ export async function handleLead(req, env, deps = {}) {
     return json(500, { ok: false, error: 'konfiguration' });
   }
   const send = env.MAILGUN_API_KEY && env.MAILGUN_DOMAIN ? mailgun(env, fetchFn) : null;
+  // Mail er ikke sat op, men leadet gemmes i CRM: skriv det i loggen, så en manglende leadmail ikke går ubemærket hen.
+  if (!hasMail) log(`[lead] Leadmail sendes ikke. Mangler: ${['MAILGUN_API_KEY', 'MAILGUN_DOMAIN', 'LEAD_TO'].filter(k => !env[k]).join(', ')}`);
   const from = env.LEAD_FROM || `${siteName} <hjemmeside@${env.MAILGUN_DOMAIN}>`;
 
   const channels = {
