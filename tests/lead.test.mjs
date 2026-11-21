@@ -213,6 +213,13 @@ test('bekræftelse: højst én pr. adresse pr. døgn', async () => {
   assert.equal(await crm.confirmOnce('jens@example.dk', NOW + 25 * 3600 * 1000), true);
 });
 
+test('bekræftelse: frigives igen, hvis afsendelsen fejler', async () => {
+  const crm = crmStore(memStore());
+  assert.equal(await crm.confirmOnce('jens@example.dk', NOW), true);
+  await crm.confirmRelease('Jens@Example.dk');
+  assert.equal(await crm.confirmOnce('jens@example.dk', NOW + 1000), true);
+});
+
 test('bekræftelse kan slås fra pr. kunde', async () => {
   const f = fakeFetch();
   await handleLead(req(good), { ...env, CONFIRM_TO_LEAD: 'false' }, { fetch: f, now: () => NOW, log: () => {} });

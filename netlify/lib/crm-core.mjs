@@ -46,6 +46,10 @@ export function crmStore(store) {
       await store.setJSON(key, { ts: now });
       return true;
     },
+    /** Frigiver døgnspærren igen, hvis bekræftelsen ikke kunne sendes. */
+    async confirmRelease(email) {
+      await store.delete(`bekr/${sha256(String(email).trim().toLowerCase())}`);
+    },
     /** Gem et lead fra hjemmesidens formular (inkl. filer). Kaldes af lead-core. */
     async saveFromForm(lead, files = [], now = Date.now()) {
       const filer = [];

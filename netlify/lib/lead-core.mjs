@@ -205,10 +205,16 @@ export async function handleLead(req, env, deps = {}) {
   const confirmDomain = env.CONFIRM_MAILGUN_DOMAIN || env.MAILGUN_DOMAIN;
   if (env.CONFIRM_TO_LEAD !== 'false' && env.MAILGUN_API_KEY && confirmDomain) {
     later((async () => {
-      if (deps.crm?.confirmOnce && !(await deps.crm.confirmOnce(lead.email, now))) return false;
+      if (deps.crm?.confirmOnce && !(await deps.crm.confirmOnce(lead.email, now))) { log(`[lead] ${lead.id} bekræftelse sprunget over: adressen har fået én inden for et døgn`); return false; }
       const sendC = mailgun({ ...env, MAILGUN_DOMAIN: confirmDomain }, fetchFn);
       const m = confirmMail(lead, siteName, env);
-      return sendC({ from: env.CONFIRM_FROM || `${siteName} <bekraeftelse@${confirmDomain}>`, to: lead.email, 'h:Reply-To': env.LEAD_TO, subject: m.subject, text: m.text, 'o:tag': 'bekraeftelse', 'o:tracking': 'no' }, SIDE_TIMEOUT_MS);
+      try {
+        return await sendC({ from: env.CONFIRM_FROM || `${siteName} <bekraeftelse@${confirmDomain}>`, to: lead.email, 'h:Reply-To': env.LEAD_TO, subject: m.subject, text: m.text, 'o:tag': 'bekraeftelse', 'o:tracking': 'no' }, SIDE_TIMEOUT_MS);
+      } catch (e) {
+        // Mislykket afsendelse må ikke bruge døgnets ene bekræftelse.
+        await deps.crm?.confirmRelease?.(lead.email).catch(() => {});
+        throw e;
+      }
     })());
   }
 
