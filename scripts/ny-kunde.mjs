@@ -18,12 +18,18 @@ const dest = path.join('sites', slug);
 if (fs.existsSync(dest)) { console.error(`sites/${slug} findes allerede. Vælg et andet navn.`); process.exit(1); }
 
 fs.cpSync(src, dest, { recursive: true });
+// Demokundens egne sektioner (components/) hører kun til demokunden.
+fs.rmSync(path.join(dest, 'components'), { recursive: true, force: true });
 // Demoindlæg og demolandingsside fjernes. De øvrige sider og billeder bliver som skabeloner, der skal udskiftes;
 // en produktionsbygning stopper, så længe der står demotekst, "Eksempelbillede" eller UDFYLD.
 for (const f of fs.readdirSync(path.join(dest, 'blog'))) fs.rmSync(path.join(dest, 'blog', f));
 fs.writeFileSync(path.join(dest, 'blog', '.gitkeep'), '');
 fs.rmSync(path.join(dest, 'pages', 'lp'), { recursive: true, force: true });
 
+for (const f of fs.readdirSync(path.join(dest, 'pages')).filter(f => f.endsWith('.md'))) {
+  const p = path.join(dest, 'pages', f);
+  fs.writeFileSync(p, fs.readFileSync(p, 'utf8').replace(/^custom: .*\n/m, ''));
+}
 const sitePath = path.join(dest, 'site.json');
 const site = JSON.parse(fs.readFileSync(sitePath, 'utf8'));
 delete site._kommentar;
@@ -44,6 +50,16 @@ site.ratingNote = '';
 site.footerAbout = 'UDFYLD kort tekst om firmaet til footeren.';
 site.redirects = [];
 fs.writeFileSync(sitePath, JSON.stringify(site, null, 2) + '\n');
+
+// Kundens egne filer i roden af repoet: manifest og Cloudflare-opsætning (se scripts/lib/ejerskab.mjs).
+const version = JSON.parse(fs.readFileSync('package.json', 'utf8')).version;
+if (!fs.existsSync('vaekster.json')) fs.writeFileSync('vaekster.json', JSON.stringify({ kunde: slug, skabelon: { version, opdateret: new Date().toISOString().slice(0, 10) } }, null, 2) + '\n');
+if (!fs.existsSync('wrangler.jsonc')) {
+  const w = fs.readFileSync(path.join('cloudflare', 'wrangler.skabelon.jsonc'), 'utf8')
+    .replaceAll('{{WORKER}}', slug + '-test').replaceAll('{{KUNDE}}', slug)
+    .replaceAll('{{BRAND}}', site.name.replace(/"/g, '')).replaceAll('{{TELEFON}}', site.phone?.display || '');
+  fs.writeFileSync('wrangler.jsonc', w);
+}
 
 console.log(`
 Kunden er oprettet i sites/${slug}/

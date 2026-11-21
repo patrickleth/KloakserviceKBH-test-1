@@ -6,7 +6,7 @@ import StickyCall from '../components/StickyCall.astro';
 import ConsentBanner from '../components/ConsentBanner.astro';
 import { site, abs, IS_TEST, FORM_TYPES, quoteLink } from '../lib/site';
 import { publicUrl } from '../lib/images';
-import { hasBlog as blogExists } from '../lib/config.mjs';
+import { hasBlog as blogExists, TEMPLATE_VERSION } from '../lib/config.mjs';
 import { declaredCookies, consentVersion, cookiePattern, BANNER_REV } from '../lib/cookies.mjs';
 
 interface Props {
@@ -49,6 +49,7 @@ const og = publicUrl(ogImage || site.brand.hero?.src, site.domain);
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="generator" content={`Vækster ${TEMPLATE_VERSION}`} />
   <title>{title}</title>
   <meta name="description" content={description} />
   <meta name="robots" content={robots} data-page-noindex={noindex ? 'true' : undefined} />

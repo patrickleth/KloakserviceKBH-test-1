@@ -1,4 +1,5 @@
 ---
+import CustomSections from '../components/CustomSections.astro';
 import Base from '../layouts/Base.astro';
 import Schema from '../components/Schema.astro';
 import Hero from '../components/Hero.astro';
@@ -61,6 +62,7 @@ const pctaImage = gallery.length > 1 ? gallery[gallery.length - 1] : undefined;
   {d.cards && <Cards {...d.cards} />}
   <PersonCta {...(d.personCta || {})} image={pctaImage} />
   <Sections body={page.body} images={d.images} offset={1} />
+  {d.custom && <CustomSections names={d.custom} />}
   <AreasBlock />
   {faq && <Faq heading={faq.heading} items={faq.items} />}
   <ContactBlock slug="index" formTitle={d.closing?.heading} />

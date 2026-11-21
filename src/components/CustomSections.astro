@@ -1,0 +1,13 @@
+---
+// Kundens egne sektioner: sites/<kunde>/components/<Navn>.astro.
+// Ligger i kundens mappe, så skabelonopdateringer aldrig rører dem, og andre kunder ikke får dem.
+// Bruges fra en side med frontmatter: custom: ["Navn"] (vises efter sidens sektioner).
+import { KUNDE } from '../lib/site';
+interface Props { names?: string[] }
+const { names = [] } = Astro.props;
+const all = import.meta.glob('/sites/*/components/*.astro', { eager: true }) as Record<string, { default: any }>;
+const found = names.map(n => ({ n, mod: all[`/sites/${KUNDE}/components/${n}.astro`] }));
+const missing = found.filter(f => !f.mod).map(f => f.n);
+if (missing.length) throw new Error(`Kundens sektion findes ikke: sites/${KUNDE}/components/${missing.join('.astro, ')}.astro`);
+---
+{found.map(({ mod }) => { const C = mod.default; return <C />; })}

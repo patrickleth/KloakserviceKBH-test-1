@@ -38,6 +38,7 @@ const pages = defineCollection({
     usps: z.array(z.string()).optional(),
     formTitle: z.string().optional(),
     menuText: z.string().optional(), // kort tekst under menupunktet i undermenuen
+    custom: z.array(z.string()).optional(), // kundens egne sektioner fra sites/<kunde>/components/ (navne uden .astro)
     icon: z.string().optional(), // ikon i mega-menu og ydelseskort (navn fra LineIcon.astro). Uden: gættes ud fra adressen
     // Kort-blok: fx "Tre ting der har størst betydning for prisen"
     cards: z.object({ eyebrow: z.string().optional(), heading: z.string(), lead: z.string().optional(), items: z.array(z.object({ title: z.string(), text: z.string() })).min(2).max(6) }).optional(),

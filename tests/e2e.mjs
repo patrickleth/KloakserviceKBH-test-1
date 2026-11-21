@@ -244,6 +244,21 @@ await test('Samtykke: /cookies.json har mønstre for alle erklærede cookies', a
   assert.ok(new RegExp(j.cookies.find(c => c.name === '_ga_*').pattern).test('_ga_XYZ123'));
 });
 
+await test('Version: /version.json og generator-tag viser skabelonens version', async ({ page }) => {
+  const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+  const v = await (await page.request.get(base + '/version.json')).json();
+  assert.deepEqual([v.kunde, v.skabelon], ['eksempel', pkg.version]);
+  await page.goto(base + '/');
+  assert.equal(await page.getAttribute('meta[name=generator]', 'content'), `Vækster ${pkg.version}`);
+});
+
+await test('Kundens egen sektion fra sites/<kunde>/components vises kun, hvor den er valgt', async ({ page }) => {
+  await page.goto(base + '/om-os/');
+  assert.ok(await page.isVisible('[data-kunde-sektion=vinterkampagne]'), 'kundens sektion mangler');
+  await page.goto(base + '/terrasse/');
+  assert.equal(await page.locator('[data-kunde-sektion]').count(), 0);
+});
+
 await test('Vedhæftet billede sendes med som multipart', async ({ page, apiBodies }) => {
   await page.goto(base + '/terrasse/');
   await page.click('[data-consent-banner] .consent-main [data-consent-action=deny]');

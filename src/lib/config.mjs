@@ -11,6 +11,14 @@ export const IS_TEST = MODE !== 'production';
 // TEST_FORM=true: formularen sender rigtigt også på testversionen (fx så leads kan ses i CRM'et før lancering).
 export const TEST_FORM = IS_TEST && process.env.TEST_FORM === 'true';
 export const ROOT = process.cwd();
+// Kundens manifest (vaekster.json i roden af kundens repo): hvilken kunde repoet tilhører og hvilken skabelonversion det kører.
+// Bygges der med en anden KUNDE (undtagen demokunden, som testene bruger), end repoet tilhører, stopper bygningen, så en side aldrig udgives med en anden kundes indhold.
+export const MANIFEST = (() => { try { return JSON.parse(fs.readFileSync(path.join(ROOT, 'vaekster.json'), 'utf8')); } catch { return null; } })();
+if (MANIFEST?.kunde && process.env.KUNDE && process.env.KUNDE !== 'eksempel' && MANIFEST.kunde !== process.env.KUNDE) {
+  throw new Error(`Repoet tilhører "${MANIFEST.kunde}", men der bygges med KUNDE=${process.env.KUNDE}. Ret byggekommandoen.`);
+}
+export const TEMPLATE_VERSION = (() => { try { return JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8')).version; } catch { return '0.0.0'; } })();
+
 export const SITE_DIR = path.join(ROOT, 'sites', KUNDE);
 
 export function loadSite() {
