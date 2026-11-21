@@ -20,7 +20,7 @@ Alle kunder deler database og bucket. Hver række er mærket med kundens `SITE_I
    Deploy command: `npx wrangler deploy` (standard).
 3. I `wrangler.jsonc`: `name`, `SITE_ID`, `BRAND_NAME`, `CONFIRM_PHONE`.
 4. Settings → Variables and Secrets (type **Secret**):
-   `ADMIN_USERS`, `ADMIN_SECRET`, `MAILGUN_API_KEY`, `LEAD_TO` (hvem modtager leadmails), evt. `LEAD_BCC`, `ALERT_EMAIL`.
+   `ADMIN_USERS`, `ADMIN_SECRET`, `MAILGUN_API_KEY` (sending key til leads-domænet), `CONFIRM_MAILGUN_API_KEY` (sending key til svar-domænet), `LEAD_TO` (hvem modtager leadmails), evt. `LEAD_BCC`, `ALERT_EMAIL`.
 5. Domæne: Settings → Domains & Routes → tilføj kundens domæne.
 
 Hemmeligheder skrives kun i Cloudflare, aldrig i repoet, i ClickUp eller i en chat.

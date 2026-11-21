@@ -206,7 +206,8 @@ export async function handleLead(req, env, deps = {}) {
   if (env.CONFIRM_TO_LEAD !== 'false' && env.MAILGUN_API_KEY && confirmDomain) {
     later((async () => {
       if (deps.crm?.confirmOnce && !(await deps.crm.confirmOnce(lead.email, now))) { log(`[lead] ${lead.id} bekræftelse sprunget over: adressen har fået én inden for et døgn`); return false; }
-      const sendC = mailgun({ ...env, MAILGUN_DOMAIN: confirmDomain }, fetchFn);
+      // Egen nøgle til bekræftelsesdomænet (Mailgun sending keys gælder kun ét domæne). Ellers bruges hovednøglen.
+      const sendC = mailgun({ ...env, MAILGUN_DOMAIN: confirmDomain, MAILGUN_API_KEY: env.CONFIRM_MAILGUN_API_KEY || env.MAILGUN_API_KEY }, fetchFn);
       const m = confirmMail(lead, siteName, env);
       try {
         return await sendC({ from: env.CONFIRM_FROM || `${siteName} <bekraeftelse@${confirmDomain}>`, to: lead.email, 'h:Reply-To': env.LEAD_TO, subject: m.subject, text: m.text, 'o:tag': 'bekraeftelse', 'o:tracking': 'no' }, SIDE_TIMEOUT_MS);

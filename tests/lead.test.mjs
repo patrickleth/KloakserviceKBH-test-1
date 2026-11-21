@@ -220,6 +220,17 @@ test('bekræftelse: frigives igen, hvis afsendelsen fejler', async () => {
   assert.equal(await crm.confirmOnce('jens@example.dk', NOW + 1000), true);
 });
 
+test('bekræftelse: egen Mailgun-nøgle til bekræftelsesdomænet', async () => {
+  const f = fakeFetch();
+  await handleLead(req(good), { ...env, CONFIRM_TO_LEAD: 'true', CONFIRM_MAILGUN_DOMAIN: 'b.indsendelse.dk', CONFIRM_MAILGUN_API_KEY: 'svar-nogle' }, { fetch: f, now: () => NOW, log: () => {} });
+  await new Promise(r => setTimeout(r, 20));
+  const c = f.calls.find(c => c.url.includes('b.indsendelse.dk'));
+  const lead = f.calls.find(c => c.url.includes('mailgun') && !c.url.includes('b.indsendelse.dk'));
+  assert.ok(c && lead);
+  assert.equal(c.init.headers.Authorization, 'Basic ' + Buffer.from('api:svar-nogle').toString('base64'));
+  assert.notEqual(lead.init.headers.Authorization, c.init.headers.Authorization);
+});
+
 test('bekræftelse kan slås fra pr. kunde', async () => {
   const f = fakeFetch();
   await handleLead(req(good), { ...env, CONFIRM_TO_LEAD: 'false' }, { fetch: f, now: () => NOW, log: () => {} });

@@ -114,6 +114,7 @@ Fejler en af dem, går leadet stadig igennem, og der sendes alarm. Fejler alle, 
 | `ALERT_WEBHOOK_URL` | anbefalet | Alarm når Mailgun selv er nede (fx Slack eller Make) |
 | `CONFIRM_TO_LEAD` | nej | Bekræftelse til den besøgende er slået til som standard. `false` slår den fra for kunden |
 | `CONFIRM_MAILGUN_DOMAIN` | nej | Eget afsenderdomæne til bekræftelser, fx `b.indsendelse.dk`. Uden: samme som `MAILGUN_DOMAIN` |
+| `CONFIRM_MAILGUN_API_KEY` | nej | Hemmelighed. Mailgun sending key til bekræftelsesdomænet (sending keys gælder kun ét domæne). Uden: `MAILGUN_API_KEY` |
 | `CONFIRM_FROM` | nej | Fx `KloakServiceKbh <bekraeftelse@b.indsendelse.dk>` |
 | `CONFIRM_PHONE` | nej | Telefonnummer i bekræftelsen ("Haster det, så ring på ...") |
 | `CONFIRM_PROMISE` | nej | Fx `inden for 24 timer` i bekræftelsen |
