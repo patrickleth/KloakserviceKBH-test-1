@@ -6,7 +6,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { load as yamlLoad } from 'js-yaml';
-import { loadSite, KUNDE, IS_TEST, ROOT, SITE_DIR, REMOTE_OPT } from '../lib/config.mjs';
+import { loadSite, KUNDE, IS_TEST, ROOT, SITE_DIR, REMOTE_OPT, TEMPLATE_VERSION, MANIFEST } from '../lib/config.mjs';
 
 const walk = dir => fs.readdirSync(dir, { withFileTypes: true }).flatMap(e => {
   const p = path.join(dir, e.name);
@@ -248,9 +248,14 @@ ${IS_TEST ? '  X-Robots-Tag: noindex, nofollow\n' : ''}
           else titles.set(p.title, p.rel);
           if (p.title.length > 65) report.push(`INFO: ${p.rel}: titel er ${p.title.length} tegn (Google viser ca. 60)`);
         }
+        // version.json: hvilken skabelonversion og hvilket commit siden er bygget fra (vises i portalens oversigt).
+        let commit = process.env.WORKERS_CI_COMMIT_SHA || '';
+        if (!commit) { try { commit = execFileSync('git', ['rev-parse', '--short', 'HEAD'], { encoding: 'utf8' }).trim(); } catch { /* ingen git */ } }
+        fs.writeFileSync(path.join(out, 'version.json'), JSON.stringify({ kunde: KUNDE, skabelon: TEMPLATE_VERSION, manifest: MANIFEST?.skabelon?.version || null, tilstand: IS_TEST ? 'test' : 'produktion', commit: commit.slice(0, 12), bygget: new Date().toISOString() }));
+        if (MANIFEST?.skabelon?.version && MANIFEST.skabelon.version !== TEMPLATE_VERSION) warn(`vaekster.json siger skabelon ${MANIFEST.skabelon.version}, men koden er ${TEMPLATE_VERSION}. Kør opdateringsværktøjet igen.`);
         const rapportDir = path.join(ROOT, 'rapport');
         fs.mkdirSync(rapportDir, { recursive: true });
-        const head = `Byggerapport for ${KUNDE} (${IS_TEST ? 'TEST' : 'PRODUKTION'}) ${new Date().toISOString()}\n${pagesMeta.length} sider, ${urls.length} i sitemap, ${hashes.size} inline-scripts hashet i CSP\n\n`;
+        const head = `Byggerapport for ${KUNDE} (${IS_TEST ? 'TEST' : 'PRODUKTION'}, skabelon ${TEMPLATE_VERSION}) ${new Date().toISOString()}\n${pagesMeta.length} sider, ${urls.length} i sitemap, ${hashes.size} inline-scripts hashet i CSP\n\n`;
         fs.writeFileSync(path.join(rapportDir, `${KUNDE}.txt`), head + report.join('\n') + '\n');
         logger.info(`Rapport skrevet til rapport/${KUNDE}.txt (${report.filter(r => r.startsWith('ADVARSEL')).length} advarsler)`);
       }

@@ -1,5 +1,5 @@
 // Vækster webskabelon. Én kodebase, én mappe pr. kunde under sites/.
-// Byg en kunde:  KUNDE=skelbo npm run build      (MODE=production for live)
+// Byg en kunde:  KUNDE=<kunde> npm run build      (MODE=production for live)
 import { defineConfig } from 'astro/config';
 import fs from 'node:fs';
 import path from 'node:path';

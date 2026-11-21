@@ -2,6 +2,7 @@
 // Alle undersider. Sidetypen (type i frontmatter) vælger opbygningen.
 import Base from '../layouts/Base.astro';
 import CookieDeclaration from '../components/CookieDeclaration.astro';
+import CustomSections from '../components/CustomSections.astro';
 import Schema from '../components/Schema.astro';
 import Hero from '../components/Hero.astro';
 import Reviews from '../components/Reviews.astro';
@@ -74,6 +75,7 @@ const leadtype = isLp ? `landingsside${d.variant ? '-' + d.variant : ''}` : isQu
       <PriceBlocks prices={d.prices} urgent={d.urgent} billing={d.billing} pages={pages} />
       <Reviews />
       <Sections body={page.body} images={sectionImages} />
+      {d.custom && <CustomSections names={d.custom} />}
       {faq && <Faq heading={faq.heading} items={faq.items} />}
       <ContactBlock slug={slug} leadtype={leadtype} />
     </>
@@ -93,6 +95,7 @@ const leadtype = isLp ? `landingsside${d.variant ? '-' + d.variant : ''}` : isQu
       <Sections body={page.body} images={sectionImages} to={2} />
       {!isLp && <PersonCta {...(d.personCta || {})} image={pctaImage} />}
       {nSections > 2 && <Sections body={page.body} images={sectionImages} from={2} offset={1} />}
+      {d.custom && <CustomSections names={d.custom} />}
       {d.cards && <Cards {...d.cards} />}
       {d.type === 'city' && <LocalProof city={d.city} items={d.localProof} />}
       {!isLp && ['service', 'legeplads', 'city'].includes(d.type) && <AreasBlock service={d.formService} exclude={slug} heading={d.type === 'city' && d.formService ? `${d.formService} i andre områder` : undefined} />}

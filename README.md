@@ -198,7 +198,7 @@ Bloggen findes altid på `/blog/` og kan sættes i menuen med `{ "label": "Blog"
 3. Gennemgå testsiden på `<worker>.workers.dev`, kør `npm run qa`, og send en testhenvendelse.
 4. Skift til `MODE=production`, tilføj domænet på Workeren og flyt DNS til Cloudflare.
 
-**Ændringer i skabelonen** rulles ud til hver kunde som et forslag (pull request) i kundens eget repo: bygning, tests og billeder før og efter, og først efter godkendelse går ændringen live. Hver side har sit versionsnummer.
+**Ændringer i skabelonen** rulles ud til hver kunde som et forslag (pull request) i kundens eget repo med `npm run opdater-kunde -- <ejer/repo>`: tests, bygning og Cloudflare-preview, og først efter godkendelse går ændringen live. Hvem ejer hvilke filer, og hvordan det foregår, står i `docs/OPDATERING.md`. Versionerne står i `CHANGELOG.md`.
 
 ## Exit-pakke
 

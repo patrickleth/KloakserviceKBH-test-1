@@ -1,4 +1,5 @@
 ---
+custom: ["Vinterkampagne"]
 type: about
 navLabel: Om os
 title: "Om Eksempel Tømrer ApS (demo)"
