@@ -25,21 +25,29 @@ function saveCampaign() { for (const [k, v] of Object.entries(campaign)) if (v) 
 const fromCampaign = (k: string) => campaign[k] || sess('vk_' + k) || '';
 
 // ---------- Samtykke (Google Consent Mode v2) ----------
-type Consent = { v: 1; ts: number; preferences: boolean; statistics: boolean; marketing: boolean };
+type Consent = { v: 2; id: string; ts: number; version: string; preferences: boolean; statistics: boolean; marketing: boolean };
+type Choice = Pick<Consent, 'preferences' | 'statistics' | 'marketing'>;
 const CONSENT_KEY = 'vk_consent_v2';
-const all = (on: boolean): Consent => ({ v: 1, ts: Date.now(), preferences: on, statistics: on, marketing: on });
+const CONSENT_VERSION = root.dataset.consentVersion || '';
+const CONSENT_MAX_AGE = 365 * 864e5; // nyt samtykke efter 12 måneder
+const all = (on: boolean): Choice => ({ preferences: on, statistics: on, marketing: on });
+const newId = () => (crypto as any).randomUUID?.() || Array.from(crypto.getRandomValues(new Uint8Array(16)), b => b.toString(16).padStart(2, '0')).join('');
 
+function storedConsent(): Consent | null {
+  const raw = store(CONSENT_KEY);
+  if (!raw) return null;
+  try { const c = JSON.parse(raw); return c && c.v === 2 ? c : null; } catch { return null; }
+}
 function readConsent(): Consent | null {
   if (CONSENT_MODE === 'cookiebot') {
     const cb = w.Cookiebot;
     if (!cb?.hasResponse) return null;
-    return { v: 1, ts: 0, preferences: !!cb.consent.preferences, statistics: !!cb.consent.statistics, marketing: !!cb.consent.marketing };
+    return { v: 2, id: '', ts: 0, version: '', preferences: !!cb.consent.preferences, statistics: !!cb.consent.statistics, marketing: !!cb.consent.marketing };
   }
-  const raw = store(CONSENT_KEY);
-  if (raw) { try { const c = JSON.parse(raw); if (c && c.v === 1) return c; } catch { /* */ } }
-  const old = store('vk_consent'); // tidligere version: 'grant' eller 'deny'
-  if (old === 'grant' || old === 'deny') return all(old === 'grant');
-  return null;
+  const c = storedConsent();
+  // Ældre end 12 måneder eller givet til en anden version af banneret (nye cookies, ny tekst): spørg igen.
+  if (!c || c.version !== CONSENT_VERSION || Date.now() - c.ts > CONSENT_MAX_AGE) return null;
+  return c;
 }
 const marketingOk = () => !!readConsent()?.marketing;
 
@@ -87,9 +95,37 @@ const banner = document.querySelector<HTMLElement>('[data-consent-banner]');
 if (CONSENT_MODE === 'intern' && banner) {
   const form = banner.querySelector<HTMLFormElement>('[data-consent-form]')!;
   const main = banner.querySelector<HTMLElement>('.consent-main')!;
-  const save = (c: Consent) => { store(CONSENT_KEY, JSON.stringify(c)); store('vk_consent', null); applyConsent(c); banner.hidden = true; };
+  // Cookies der hører til en kategori, slettes, når samtykket trækkes tilbage (på alle domæneniveauer).
+  const delPatterns: Record<string, string[]> = (() => { try { return JSON.parse(root.dataset.cookieDel || '{}'); } catch { return {}; } })();
+  const deleteCookies = (cat: string) => {
+    const res = (delPatterns[cat] || []).map(p => new RegExp(p));
+    const parts = location.hostname.split('.');
+    const domains = ['', ...parts.map((_, i) => '.' + parts.slice(i).join('.')).slice(0, -1)];
+    for (const name of document.cookie.split(';').map(c => c.split('=')[0].trim()).filter(Boolean)) {
+      if (!res.some(r => r.test(name))) continue;
+      for (const d of domains) document.cookie = `${name}=; Max-Age=0; path=/${d ? '; domain=' + d : ''}`;
+    }
+    for (const k of Object.keys(sessionStorage)) if (res.some(r => r.test(k))) sess(k, null);
+  };
+  const save = (choice: Choice, method: 'accept_all' | 'reject_all' | 'custom') => {
+    const prev = storedConsent();
+    const c: Consent = { v: 2, id: prev?.id || newId(), ts: Date.now(), version: CONSENT_VERSION, ...choice };
+    store(CONSENT_KEY, JSON.stringify(c)); store('vk_consent', null);
+    // Dokumentation: valget logges hos os (samtykke-id, tid, version, valg). Ingen IP eller browserdata.
+    try { navigator.sendBeacon?.('/api/consent', new Blob([JSON.stringify({ id: c.id, version: c.version, method, ...choice, path: location.pathname })], { type: 'application/json' })); } catch { /* */ }
+    const withdrawn = (['preferences', 'statistics', 'marketing'] as const).filter(k => prev?.[k] && !c[k]);
+    banner.hidden = true;
+    if (withdrawn.length) {
+      // Trukket tilbage: slet de cookies, kategorien har sat, og genindlæs, så allerede indlæste scripts stopper.
+      withdrawn.forEach(deleteCookies);
+      if (withdrawn.includes('marketing')) ['vk_gclid', 'vk_fbclid', 'vk_utm'].forEach(k => sess(k, null));
+      location.reload();
+      return;
+    }
+    applyConsent(c);
+  };
   const openSettings = () => {
-    const c = readConsent() || all(false);
+    const c: Choice = readConsent() || all(false);
     (['preferences', 'statistics', 'marketing'] as const).forEach(k => { (form.elements.namedItem(k) as HTMLInputElement).checked = c[k]; });
     banner.hidden = false; main.hidden = true; form.hidden = false;
     form.querySelector<HTMLInputElement>('input:not([disabled])')?.focus();
@@ -98,14 +134,15 @@ if (CONSENT_MODE === 'intern' && banner) {
   if (saved) applyConsent(saved); else banner.hidden = false;
   banner.addEventListener('click', e => {
     const a = (e.target as HTMLElement).closest('[data-consent-action]')?.getAttribute('data-consent-action');
-    if (a === 'grant') save(all(true));
-    else if (a === 'deny') save(all(false));
+    if (a === 'grant') save(all(true), 'accept_all');
+    else if (a === 'deny') save(all(false), 'reject_all');
     else if (a === 'settings') openSettings();
   });
   form.addEventListener('submit', e => {
     e.preventDefault();
     const v = (k: string) => (form.elements.namedItem(k) as HTMLInputElement).checked;
-    save({ v: 1, ts: Date.now(), preferences: v('preferences'), statistics: v('statistics'), marketing: v('marketing') });
+    const choice = { preferences: v('preferences'), statistics: v('statistics'), marketing: v('marketing') };
+    save(choice, choice.preferences && choice.statistics && choice.marketing ? 'accept_all' : !choice.preferences && !choice.statistics && !choice.marketing ? 'reject_all' : 'custom');
   });
   document.addEventListener('click', e => {
     if ((e.target as HTMLElement).closest('[data-cookie-settings]')) { e.preventDefault(); openSettings(); }
@@ -115,6 +152,12 @@ if (CONSENT_MODE === 'intern' && banner) {
     if ((e.target as HTMLElement).closest('[data-cookie-settings]')) { e.preventDefault(); w.Cookiebot?.renew(); }
   });
 }
+
+// Samtykke-id og -tidspunkt vises på cookiepolitikken, så den besøgende kan dokumentere sit valg.
+document.querySelectorAll<HTMLElement>('[data-consent-id]').forEach(el => {
+  const c = CONSENT_MODE === 'intern' ? storedConsent() : null;
+  el.textContent = c ? `${c.id} (${new Date(c.ts).toLocaleString('da-DK')}: ${[c.statistics && 'statistik', c.marketing && 'marketing', c.preferences && 'præferencer'].filter(Boolean).join(', ') || 'kun nødvendige'})` : 'Du har ikke truffet et valg endnu.';
+});
 
 // ---------- Klik-sporing ----------
 document.addEventListener('click', e => {

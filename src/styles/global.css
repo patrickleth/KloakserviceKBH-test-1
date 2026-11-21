@@ -699,3 +699,15 @@ img.f-center { object-position: 50% 50%; }
 .logo-tile img { width: auto; height: auto; max-height: 64px; max-width: 200px; }
 .cert-tile img { width: auto; height: auto; max-height: 40px; max-width: 130px; }
 @media (max-width: 600px) { .cert-tile img { max-height: 34px; max-width: 104px; } .logo-tile img { max-height: 52px; max-width: 160px; } }
+
+/* Samtykke: "Afvis alle" og "Accepter alle" er helt ens (farve, størrelse, vægt). Ingen af dem må fremhæves. */
+.consent .consent-choice { background: var(--primary-dark); color: #fff; border: 2px solid var(--primary-dark); min-width: 9.5em; justify-content: center; }
+.consent .consent-choice:hover { filter: brightness(1.15); }
+.consent .consent-more { min-width: 6em; justify-content: center; }
+@media (max-width: 520px) { .consent .consent-btns { display: grid; grid-template-columns: 1fr 1fr; } .consent .consent-more { grid-column: 1 / -1; order: 3; } .consent .consent-choice { min-width: 0; } }
+.cookie-decl { margin-top: 2.5em; }
+.cookie-decl .table-wrap { overflow-x: auto; margin: .5em 0 1.5em; }
+.cookie-decl table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+.cookie-decl th, .cookie-decl td { text-align: left; vertical-align: top; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+.cookie-decl th { font-weight: 600; background: var(--tint, #f5f5f5); }
+.cookie-decl code { font-size: .85em; white-space: nowrap; }

@@ -148,7 +148,15 @@ Alle kunder får et lille CRM på en skjult adresse: `https://<kundens-domæne>/
 
 - **Google Consent Mode v2** med alle signaler (ad_storage, ad_user_data, ad_personalization, analytics_storage, functionality_storage, personalization_storage) sat til "denied" som det første i `<head>`.
 - **Cookiebot** (`consent.provider: "cookiebot"` + `cookiebotId`): den certificerede løsning, I bruger i dag. Cookiebot opdaterer Consent Mode, og GTM indlæses efter samtykke. Cookiebot virker kun på domæner, der er tilføjet i Cookiebot, så testversioner på `.workers.dev` bruger det interne banner.
-- **Væksters eget banner** (`consent.provider: "intern"`): "Accepter alle", "Afvis alle" og "Tilpas" på lige fod, valg pr. kategori (præferencer, statistik, marketing), og linket "Cookieindstillinger" i footeren åbner valgene igen. Google kræver en *certificeret* CMP for udgivere, der viser Google-annoncer (AdSense o.l.). Annoncører, der kører Google Ads til egen side, skal "kun" sende korrekte Consent Mode v2-signaler, og det gør banneret. Cookiebot logger dog samtykker som dokumentation, hvilket det interne banner ikke gør. Derfor anbefales Cookiebot til kunder i drift.
+- **Væksters eget banner** (`consent.provider: "intern"`, standard):
+  - "Afvis alle" og "Accepter alle" står på første lag med samme udseende og størrelse (testet automatisk på computer og mobil). Intet er slået til på forhånd.
+  - Teksten nævner formål og udbydere (Google, Meta), og at samtykket kan trækkes tilbage via cookieknappen.
+  - **Samtykkelog:** hvert valg gemmes i D1 (`/api/consent`): samtykke-id, tidspunkt, bannerets version, valg pr. kategori, metode og side. Ingen IP eller browserdata. Opslag og CSV-eksport i CRM'et: `/administrator-system/api/samtykker?id=<id>&format=csv`.
+  - **Fornyelse:** nyt samtykke efter 12 måneder, og når bannerets version skifter (ny cookie i erklæringen eller ny tekst, `BANNER_REV` i `src/lib/cookies.mjs`).
+  - **Tilbagetrækning:** cookies for de fravalgte kategorier slettes på alle domæneniveauer, og siden genindlæses, så indlæste scripts stopper.
+- **Cookieerklæring:** udledes af opsætningen (`src/lib/cookies.mjs`: GTM giver Google Analytics og Ads, `metaPixelId` giver Meta, egne med `consent.cookies`). Vises automatisk nederst på cookiepolitikken sammen med den besøgendes samtykke-id, og som `/cookies.json`.
+- **Månedlig scanning:** `.github/workflows/cookie-scan.yml` kører `scripts/cookie-scan.mjs` den 1. i hver måned mod den live side (`consent.scanUrl` eller `domain`, eller repo-variablen `SCAN_URL`). Fejler den, sender GitHub en mail.
+- **Byggerapporten** advarer om indlejret indhold (YouTube, Google Maps o.l.), der sætter cookies før samtykke.
 - **GTM**: `tracking.gtmId`. Indlæses først efter samtykke til statistik eller marketing (`tracking.consentMode: "basic"`, standard). `"advanced"` indlæser GTM med det samme med alt afvist, så Google kan modellere konverteringer.
 - **Meta Pixel**: `tracking.metaPixelId`. Indlæses kun efter marketing-samtykke, sender PageView og Lead (på takkesiden). Lad feltet være tomt, hvis pixlen ligger i GTM.
 - gclid og fbclid gemmes og sendes kun med marketing-samtykke.

@@ -1,6 +1,7 @@
 ---
 // Alle undersider. Sidetypen (type i frontmatter) vælger opbygningen.
 import Base from '../layouts/Base.astro';
+import CookieDeclaration from '../components/CookieDeclaration.astro';
 import Schema from '../components/Schema.astro';
 import Hero from '../components/Hero.astro';
 import Reviews from '../components/Reviews.astro';
@@ -63,6 +64,7 @@ const leadtype = isLp ? `landingsside${d.variant ? '-' + d.variant : ''}` : isQu
         <h1>{d.h1}</h1>
         {d.intro && <p class="lead">{d.intro}</p>}
         <Fragment set:html={render(page.body || '')} />
+        {slug === site.privacySlug && <CookieDeclaration />}
         {d.type === 'job' && <p>Send en ansøgning til <a href={`mailto:${site.email}`} data-track="mailto_click">{site.email}</a> eller ring på <a href={telHref} data-track="tel_click">{site.phone.display}</a>.</p>}
       </article>
     </>

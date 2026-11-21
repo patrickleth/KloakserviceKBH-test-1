@@ -1,22 +1,28 @@
 ---
 // Væksters eget samtykkebanner (bruges når Cookiebot ikke er sat op).
-// Google Consent Mode v2 med alle signaler, valg pr. kategori, "Afvis alle" på lige fod med "Accepter alle",
-// og man kan altid åbne indstillingerne igen via linket "Cookieindstillinger" i footeren.
+// Regler (cookiebekendtgørelsen og Datatilsynets vejledning):
+// - "Afvis alle" og "Accepter alle" står på første lag med samme udseende og størrelse.
+// - Intet er slået til på forhånd, og intet sættes, før der er sagt ja.
+// - Teksten siger hvad, hvorfor og hvem (udbyderne), og at samtykket kan trækkes tilbage lige så let.
+// - Valget logges som dokumentation (/api/consent), og der spørges igen efter 12 måneder eller ved ny version.
 import { site, href } from '../lib/site';
+interface Props { providers?: string[] }
+const { providers = [] } = Astro.props;
+const who = providers.length ? providers.join(' og ') : 'vores samarbejdspartnere';
 const cats = [
-  { key: 'preferences', name: 'Præferencer', text: 'Husker dine valg på siden, fx sprog eller indhold du har set.' },
-  { key: 'statistics', name: 'Statistik', text: 'Anonym måling af hvordan siden bruges (Google Analytics), så vi kan forbedre den.' },
-  { key: 'marketing', name: 'Marketing', text: 'Måling af annoncer og målretning hos Google og Meta. Bruges også til at vide, hvilke annoncer der giver henvendelser.' }
+  { key: 'preferences', name: 'Præferencer', text: 'Husker dine valg på siden, fx indhold du har set.' },
+  { key: 'statistics', name: 'Statistik', text: 'Måler hvordan siden bruges (Google Analytics), så vi kan forbedre den.' },
+  { key: 'marketing', name: 'Marketing', text: `Måler hvilke annoncer hos ${who} der giver henvendelser, og kan bruges til at vise relevante annoncer.` }
 ];
 ---
-<div class="consent" role="dialog" aria-modal="false" aria-labelledby="c-h" hidden data-consent-banner>
+<div class="consent" role="dialog" aria-modal="false" aria-labelledby="c-h" aria-describedby="c-t" hidden data-consent-banner>
   <div class="consent-main">
-    <p id="c-h" class="consent-h">Vi bruger cookies</p>
-    <p>Vi bruger cookies til statistik og markedsføring, så vi kan måle, hvad der virker. Nødvendige cookies er altid slået til. Du kan til enhver tid ændre dit valg med cookieknappen nederst til venstre. <a href={href(site.privacySlug)}>Læs vores cookiepolitik</a></p>
+    <p id="c-h" class="consent-h">Må vi bruge cookies?</p>
+    <p id="c-t">Vi vil gerne bruge cookies til statistik og til at måle vores annoncer hos {who}. Det sker kun, hvis du siger ja. Nødvendige funktioner virker altid. Du kan til enhver tid ændre eller trække dit samtykke tilbage med cookieknappen nederst på siden. <a href={href(site.privacySlug)}>Læs cookiepolitikken</a></p>
     <div class="consent-btns">
-      <button type="button" class="btn btn-outline btn-sm" data-consent-action="settings">Tilpas</button>
-      <button type="button" class="btn btn-outline btn-sm" data-consent-action="deny">Afvis alle</button>
-      <button type="button" class="btn btn-primary btn-sm" data-consent-action="grant">Accepter alle</button>
+      <button type="button" class="btn btn-outline btn-sm consent-more" data-consent-action="settings">Tilpas</button>
+      <button type="button" class="btn btn-sm consent-choice" data-consent-action="deny">Afvis alle</button>
+      <button type="button" class="btn btn-sm consent-choice" data-consent-action="grant">Accepter alle</button>
     </div>
   </div>
   <form class="consent-settings" hidden data-consent-form>
@@ -26,9 +32,9 @@ const cats = [
       <label class="consent-cat"><span><strong>{c.name}</strong><small>{c.text}</small></span><input type="checkbox" name={c.key} /></label>
     ))}
     <div class="consent-btns">
-      <button type="button" class="btn btn-outline btn-sm" data-consent-action="deny">Afvis alle</button>
-      <button type="submit" class="btn btn-outline btn-sm">Gem valg</button>
-      <button type="button" class="btn btn-primary btn-sm" data-consent-action="grant">Accepter alle</button>
+      <button type="submit" class="btn btn-outline btn-sm consent-more">Gem valg</button>
+      <button type="button" class="btn btn-sm consent-choice" data-consent-action="deny">Afvis alle</button>
+      <button type="button" class="btn btn-sm consent-choice" data-consent-action="grant">Accepter alle</button>
     </div>
   </form>
 </div>

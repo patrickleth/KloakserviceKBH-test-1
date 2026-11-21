@@ -7,6 +7,7 @@ import ConsentBanner from '../components/ConsentBanner.astro';
 import { site, abs, IS_TEST, FORM_TYPES, quoteLink } from '../lib/site';
 import { publicUrl } from '../lib/images';
 import { hasBlog as blogExists } from '../lib/config.mjs';
+import { declaredCookies, consentVersion, cookiePattern, BANNER_REV } from '../lib/cookies.mjs';
 
 interface Props {
   title: string;
@@ -31,10 +32,20 @@ const pixelId = site.tracking.metaPixelId || '';
 const consentMode = site.tracking.consentMode === 'advanced' ? 'advanced' : 'basic';
 const cookiebot = site.consent.provider === 'cookiebot' && site.consent.cookiebotId;
 const hasBlog = blogExists();
+// Cookieerklæring: bestemmer bannerets tekst, versionen (ny version = alle spørges igen) og hvilke cookies der slettes,
+// når nogen trækker et samtykke tilbage.
+const cookies = declaredCookies(site, { gtmId, pixelId });
+const consentVer = consentVersion(cookies, BANNER_REV);
+const cookieDel = JSON.stringify({
+  statistics: cookies.filter(c => c.category === 'statistics').map(cookiePattern),
+  marketing: cookies.filter(c => c.category === 'marketing').map(cookiePattern),
+  preferences: cookies.filter(c => c.category === 'preferences').map(cookiePattern)
+});
+const providers = [...new Set(cookies.filter(c => c.category !== 'necessary' && c.provider !== 'Denne hjemmeside').map(c => c.provider))];
 const og = publicUrl(ogImage || site.brand.hero?.src, site.domain);
 ---
 <!doctype html>
-<html lang="da" data-gtm={gtmId} data-pixel={pixelId} data-cmode={consentMode} data-consent={cookiebot ? 'cookiebot' : 'intern'}>
+<html lang="da" data-gtm={gtmId} data-pixel={pixelId} data-cmode={consentMode} data-consent={cookiebot ? 'cookiebot' : 'intern'} data-consent-version={consentVer} data-cookie-del={cookieDel}>
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -67,7 +78,7 @@ const og = publicUrl(ogImage || site.brand.hero?.src, site.domain);
   </main>
   <Footer hasBlog={hasBlog} />
   <StickyCall quoteHref={quoteHref} />
-  {!cookiebot && <ConsentBanner />}
+  {!cookiebot && <ConsentBanner providers={providers} />}
   <button type="button" class="cookie-fab" data-cookie-settings aria-label="Cookieindstillinger" title="Cookieindstillinger">
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.4A9 9 0 1 1 11.6 3a3 3 0 0 0 3.6 3.6 3 3 0 0 0 4.2 4.2 3 3 0 0 0 1.6 1.6Z"/><circle cx="8.5" cy="9.5" r="1" fill="currentColor"/><circle cx="9" cy="15" r="1" fill="currentColor"/><circle cx="14.5" cy="15.5" r="1" fill="currentColor"/><circle cx="12.5" cy="11.5" r=".6" fill="currentColor"/></svg>
   </button>

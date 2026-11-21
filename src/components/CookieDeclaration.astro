@@ -1,0 +1,27 @@
+---
+// Cookieerklæring: vises automatisk nederst på cookiepolitikken (site.privacySlug).
+// Listen udledes af opsætningen (src/lib/cookies.mjs) og tjekkes hver måned mod den live side (scripts/cookie-scan.mjs).
+import { site } from '../lib/site';
+import { declaredCookies, CATEGORY_NAMES } from '../lib/cookies.mjs';
+const cookies = declaredCookies(site);
+const order = ['necessary', 'preferences', 'statistics', 'marketing'];
+const groups = order.map(k => ({ k, name: CATEGORY_NAMES[k], list: cookies.filter(c => c.category === k) })).filter(g => g.list.length);
+const updated = new Date().toLocaleDateString('da-DK', { day: 'numeric', month: 'long', year: 'numeric' });
+---
+<section class="cookie-decl" id="cookieerklaering">
+  <h2>Cookies på denne hjemmeside</h2>
+  <p>Vi sætter kun andre cookies end de nødvendige, hvis du har sagt ja i cookiebanneret. Herunder står alle cookies og al lagring i din browser, som siden bruger, sorteret efter formål.</p>
+  {groups.map(g => (
+    <>
+      <h3>{g.name}</h3>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Navn</th><th>Udbyder</th><th>Formål</th><th>Type</th><th>Udløber</th></tr></thead>
+        <tbody>{g.list.map(c => <tr><td><code>{c.name}</code></td><td>{c.provider}</td><td>{c.purpose}</td><td>{c.type}</td><td>{c.expiry}</td></tr>)}</tbody>
+      </table></div>
+    </>
+  ))}
+  <h3>Sådan ændrer eller trækker du dit samtykke tilbage</h3>
+  <p>Klik på <a href="#" data-cookie-settings>Cookieindstillinger</a> eller cookieknappen nederst på siden. Trækker du et samtykke tilbage, sletter vi de cookies, vi har sat til formålet, og siden genindlæses. Du bliver spurgt igen efter 12 måneder.</p>
+  <p><strong>Dit samtykke-id:</strong> <span data-consent-id>Du har ikke truffet et valg endnu.</span><br /><small>Oplys id'et, hvis du vil have dokumentation for dit valg.</small></p>
+  <p><small>Listen er senest opdateret {updated}.</small></p>
+</section>

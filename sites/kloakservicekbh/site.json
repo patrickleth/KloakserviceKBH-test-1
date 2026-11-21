@@ -391,7 +391,8 @@
   },
   "consent": {
     "provider": "intern",
-    "cookiebotId": "2395522b-defd-4bc1-ad63-5ee66357ecd7"
+    "cookiebotId": "2395522b-defd-4bc1-ad63-5ee66357ecd7",
+    "scanUrl": "https://kloakservicekbh-test.v-kster.workers.dev/"
   },
   "csp": {
     "extraScript": [],

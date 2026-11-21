@@ -41,7 +41,11 @@ Til Julie og Line. Sæt kryds i rækkefølge. Alt foregår i repoet og i Cloudfl
 - [ ] Cookiebot: `consent.provider: "cookiebot"` og `cookiebotId`, og domænet tilføjet i Cookiebot
 - [ ] I GTM: Google Ads-konvertering og GA4 lytter på eventet `generate_lead`. Opkald på `tel_click`
 - [ ] Meta-pixel via skabelon i GTM, ikke brugerdefineret HTML
-- [ ] Tjek med Tag Assistant: intet fyrer før samtykke, alt fyrer efter
+- [ ] Tjek med Tag Assistant: intet fyrer før samtykke, alt fyrer efter, og Consent Mode-signalerne skifter korrekt
+- [ ] Test i Chrome, Safari på iPhone og Firefox: banner, afvis, accepter, tilbagetrækning via cookieknappen
+- [ ] `npm run cookie-scan -- <live-adresse>` giver "Ingen fejl". Nye tredjepartscookies tilføjes med `consent.cookies`
+- [ ] Cookiepolitikken passer til siden (formular, GTM, Google Ads, Meta) og har cookieerklæringen nederst
+- [ ] Cookiescanning slået til i GitHub Actions (kør den én gang manuelt under Actions)
 
 ## 7. Go-live
 

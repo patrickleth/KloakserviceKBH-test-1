@@ -214,6 +214,13 @@ ${IS_TEST ? '  X-Robots-Tag: noindex, nofollow\n' : ''}
         }
         if (thinCities.length) warn(`${thinCities.length} bysider uden lokal dokumentation (localProof). Politik: ${site.cityPolicy}${site.cityPolicy === 'noindex' ? ', de er sat til noindex' : ''}. Se listen i rapporten.`);
         if (thinCities.length) report.push('BYSIDER UDEN LOKAL DOKUMENTATION:\n' + thinCities.map(s => '  - ' + s).join('\n'));
+        // Indlejret indhold fra tredjeparter (YouTube, Google Maps, Vimeo, Facebook) sætter cookies, før der er givet samtykke.
+        // Det må ikke ske: brug et billede med "klik for at vise" i stedet.
+        for (const f of htmlFiles) {
+          const html = fs.readFileSync(f, 'utf8');
+          const m = html.match(/<iframe[^>]+src="https?:\/\/(?:www\.)?([^/"]+)/i);
+          if (m) warn(`${path.relative(out, f)}: indlejret indhold fra ${m[1]} sætter cookies før samtykke. Brug "klik for at vise".`);
+        }
         // Mails: tjek at leadmail og bekræftelse har det, de skal bruge. Alt hentes automatisk fra site.json,
         // så her fanges kun huller. Ingen manuel opsætning pr. kunde.
         try {

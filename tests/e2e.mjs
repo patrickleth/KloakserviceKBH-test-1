@@ -35,7 +35,7 @@ async function test(name, fn, opts = {}) {
   page.on('console', m => { if (m.type() === 'error' && /Content Security Policy/i.test(m.text())) cspErrors.push(m.text()); });
   page.on('pageerror', e => cspErrors.push('JS: ' + e.message));
   const external = [];
-  let apiStatus = 200; const apiBodies = [];
+  let apiStatus = 200; const apiBodies = []; const consentBodies = [];
   let adminIn = false;
   const now = new Date().toISOString();
   const adminLeads = [{ id: 'abc12345-x', status: 'ny', kilde: 'formular', navn: '<img src=x onerror=alert(1)>', telefon: '12345678', ydelse: 'Kloakrens', beskrivelse: 'Stoppet afløb', vaerdi: null, filer: [], noter: [], historik: [], oprettet: now, opdateret: now }];
@@ -47,6 +47,7 @@ async function test(name, fn, opts = {}) {
         const ct = req.headers()['content-type'] || '';
         apiBodies.push(ct.includes('application/json') ? JSON.parse(req.postData()) : { multipart: true, raw: req.postDataBuffer()?.toString('latin1') || '' });
         return route.fulfill({ status: apiStatus, contentType: 'application/json', body: JSON.stringify(apiStatus === 200 ? { ok: true, id: 'e2e-1' } : { ok: false }) }); }
+      if (u.pathname === '/api/consent') { try { consentBodies.push(JSON.parse(route.request().postData() || '{}')); } catch { consentBodies.push({ ugyldig: true }); } return route.fulfill({ status: 204 }); }
       if (u.pathname.startsWith('/administrator-system/api/')) {
         // Falsk CRM-API: ikke logget ind, indtil login kaldes.
         const r = u.pathname.slice('/administrator-system/api/'.length);
@@ -62,7 +63,7 @@ async function test(name, fn, opts = {}) {
     }
     external.push(u.host + u.pathname); return route.abort();
   });
-  const t = { page, external, apiBodies, setApi: s => { apiStatus = s; }, dl: () => page.evaluate(() => JSON.parse(JSON.stringify(window.dataLayer.map(x => (x && x.length !== undefined && typeof x !== 'string') ? Array.from(x) : x)))) };
+  const t = { page, ctx, external, apiBodies, consentBodies, setApi: s => { apiStatus = s; }, dl: () => page.evaluate(() => JSON.parse(JSON.stringify(window.dataLayer.map(x => (x && x.length !== undefined && typeof x !== 'string') ? Array.from(x) : x)))) };
   try { await fn(t); assert.equal(cspErrors.length, 0, 'CSP/JS-fejl: ' + cspErrors.join(' | ')); passed++; console.log('  ok    ' + name); }
   catch (e) { failed++; console.log('  FEJL  ' + name + '\n        ' + e.message.split('\n')[0]); }
   await ctx.close();
@@ -152,6 +153,95 @@ await test('Cookieindstillinger kan åbnes igen fra footeren', async ({ page }) 
   await page.click('[data-consent-form] [data-consent-action=deny]');
   const saved = JSON.parse(await page.evaluate(() => localStorage.getItem('vk_consent_v2')));
   assert.equal(saved.marketing, false);
+});
+
+await test('Samtykke: "Afvis alle" og "Accepter alle" er lige store og ens', async ({ page }) => {
+  await page.goto(base + '/');
+  const look = sel => page.$eval(sel, el => { const s = getComputedStyle(el), r = el.getBoundingClientRect(); return { w: Math.round(r.width), h: Math.round(r.height), bg: s.backgroundColor, color: s.color, weight: s.fontWeight, size: s.fontSize, border: s.borderTopWidth }; });
+  const deny = await look('[data-consent-banner] .consent-main [data-consent-action=deny]');
+  const grant = await look('[data-consent-banner] .consent-main [data-consent-action=grant]');
+  assert.deepEqual({ ...deny, w: 0 }, { ...grant, w: 0 }, 'knapperne ser forskellige ud');
+  assert.ok(Math.abs(deny.w - grant.w) <= 2, `bredde ${deny.w} mod ${grant.w}`);
+}, { mobile: false });
+
+await test('Samtykke: knapperne er også ens på mobil', async ({ page }) => {
+  await page.goto(base + '/');
+  const box = sel => page.locator(sel).boundingBox();
+  const d = await box('[data-consent-banner] .consent-main [data-consent-action=deny]');
+  const g = await box('[data-consent-banner] .consent-main [data-consent-action=grant]');
+  assert.ok(Math.abs(d.width - g.width) <= 2 && Math.abs(d.height - g.height) <= 2, `deny ${d.width}x${d.height}, grant ${g.width}x${g.height}`);
+}, { mobile: true });
+
+await test('Samtykke: valget logges med samtykke-id, version og metode', async ({ page, consentBodies }) => {
+  await page.goto(base + '/');
+  await page.click('[data-consent-banner] .consent-main [data-consent-action=deny]');
+  await page.waitForTimeout(400);
+  const saved = JSON.parse(await page.evaluate(() => localStorage.getItem('vk_consent_v2')));
+  const version = await page.evaluate(() => document.documentElement.dataset.consentVersion);
+  assert.equal(consentBodies.length, 1, 'ingen logning');
+  const b = consentBodies[0];
+  assert.deepEqual([b.id, b.version, b.method, b.statistics, b.marketing, b.preferences], [saved.id, version, 'reject_all', false, false, false]);
+  assert.ok(/^[a-f0-9-]{16,}$/.test(saved.id), 'samtykke-id mangler');
+});
+
+await test('Samtykke: "Tilpas" logges som custom', async ({ page, consentBodies }) => {
+  await page.goto(base + '/');
+  await page.click('[data-consent-action=settings]');
+  await page.check('[data-consent-form] [name=statistics]');
+  await page.click('[data-consent-form] button[type=submit]');
+  await page.waitForTimeout(400);
+  assert.equal(consentBodies.at(-1)?.method, 'custom');
+});
+
+await test('Samtykke: ældre end 12 måneder giver nyt banner og ingen sporing', async ({ page, ctx, external }) => {
+  await page.goto(base + '/');
+  const version = await page.evaluate(() => document.documentElement.dataset.consentVersion);
+  await ctx.addInitScript(v => localStorage.setItem('vk_consent_v2', JSON.stringify({ v: 2, id: 'aaaaaaaa-bbbb', ts: Date.now() - 400 * 864e5, version: v, preferences: true, statistics: true, marketing: true })), version);
+  await page.goto(base + '/terrasse/');
+  await page.waitForTimeout(500);
+  assert.ok(await page.isVisible('[data-consent-banner]'), 'banneret skal vises igen');
+  assert.equal(external.length, 0, 'eksterne kald: ' + external.join(', '));
+});
+
+await test('Samtykke: ny version af banneret giver nyt banner', async ({ page, ctx, external }) => {
+  await ctx.addInitScript(() => localStorage.setItem('vk_consent_v2', JSON.stringify({ v: 2, id: 'aaaaaaaa-bbbb', ts: Date.now(), version: '0000000000', preferences: true, statistics: true, marketing: true })));
+  await page.goto(base + '/');
+  await page.waitForTimeout(500);
+  assert.ok(await page.isVisible('[data-consent-banner]'), 'banneret skal vises igen');
+  assert.equal(external.length, 0, 'eksterne kald: ' + external.join(', '));
+});
+
+await test('Samtykke: tilbagetrækning sletter cookies og genindlæser siden', async ({ page, consentBodies }) => {
+  await page.goto(base + '/terrasse/?gclid=E2EGCLID');
+  await page.click('[data-consent-banner] .consent-main [data-consent-action=grant]');
+  await page.evaluate(() => { for (const c of ['_ga=GA1.1.1', '_ga_ABC123=GS1.1', '_gcl_au=1.1', '_fbp=fb.1.1', 'andet=behold']) document.cookie = c + '; path=/'; });
+  await page.click('.cookie-fab');
+  await Promise.all([page.waitForEvent('load'), page.click('[data-consent-form] [data-consent-action=deny]')]);
+  const left = await page.evaluate(() => document.cookie);
+  assert.ok(!/_ga|_gcl|_fbp/.test(left), 'cookies blev ikke slettet: ' + left);
+  assert.ok(/andet=behold/.test(left), 'andre cookies må ikke slettes');
+  assert.equal(await page.evaluate(() => sessionStorage.getItem('vk_gclid')), null, 'gclid skal slettes');
+  assert.ok(!(await page.isVisible('[data-consent-banner]')), 'valget skal huskes efter genindlæsning');
+  assert.deepEqual(consentBodies.map(b => b.method), ['accept_all', 'reject_all']);
+});
+
+await test('Samtykke: cookiepolitikken viser erklæringen og dit samtykke-id', async ({ page }) => {
+  await page.goto(base + '/');
+  await page.click('[data-consent-banner] .consent-main [data-consent-action=grant]');
+  const id = JSON.parse(await page.evaluate(() => localStorage.getItem('vk_consent_v2'))).id;
+  await page.goto(base + '/cookies/');
+  const txt = await page.textContent('#cookieerklaering');
+  for (const name of ['vk_consent_v2', '_ga', '_gcl_au', '_fbp']) assert.ok(txt.includes(name), `${name} mangler i erklæringen`);
+  assert.ok((await page.textContent('[data-consent-id]')).includes(id), 'samtykke-id vises ikke');
+});
+
+await test('Samtykke: /cookies.json har mønstre for alle erklærede cookies', async ({ page }) => {
+  const r = await page.request.get(base + '/cookies.json');
+  const j = await r.json();
+  const names = j.cookies.map(c => c.name);
+  for (const n of ['vk_consent_v2', '_ga', '_ga_*', '_gcl_au', '_fbp']) assert.ok(names.includes(n), n + ' mangler');
+  assert.ok(j.cookies.every(c => typeof c.pattern === 'string' && new RegExp(c.pattern)), 'mønster mangler');
+  assert.ok(new RegExp(j.cookies.find(c => c.name === '_ga_*').pattern).test('_ga_XYZ123'));
 });
 
 await test('Vedhæftet billede sendes med som multipart', async ({ page, apiBodies }) => {

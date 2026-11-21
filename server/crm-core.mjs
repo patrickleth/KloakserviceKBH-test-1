@@ -7,6 +7,7 @@
 //   bruger/<navn>    ny adgangskode efter "Glemt adgangskode" (går forud for ADMIN_USERS)
 //   nulstil/<sha256> engangslink til ny adgangskode (gyldigt i 30 minutter)
 //   bekr/<sha256>    hvornår en e-mailadresse sidst fik en bekræftelsesmail (højst én pr. døgn)
+import { listConsents, consentsCsv } from './consent-core.mjs';
 import { parseUsers, verifyPassword, hashPassword, signSession, readSession, getCookie, sessionCookie, throttleKey, passVersion, sha256, newToken } from './admin-auth.mjs';
 
 // Standard-stages. Kan tilpasses i CRM'et (gemmes i config/stages). "arkiveret" findes altid og vises ikke på boardet.
@@ -183,6 +184,12 @@ export async function handleAdmin(req, env, deps) {
   const stamp = hvad => ({ ts: new Date(now).toISOString(), af: me, hvad });
 
   if (route === 'me' && method === 'GET') return json(200, { ok: true, bruger: me });
+  // Samtykkelog: dokumentation for cookievalg. ?id=<samtykke-id> slår ét op, ?format=csv giver en fil.
+  if (route === 'samtykker' && method === 'GET') {
+    const rows = await listConsents(store, { id: url.searchParams.get('id') || '' });
+    if (url.searchParams.get('format') === 'csv') return new Response(consentsCsv(rows), { status: 200, headers: { 'Content-Type': 'text/csv; charset=utf-8', 'Content-Disposition': 'attachment; filename="samtykker.csv"', 'Cache-Control': 'no-store' } });
+    return json(200, { ok: true, samtykker: rows });
+  }
   const validStatus = async st => st === 'arkiveret' || (await loadConfig(store)).stages.some(x => x.id === st);
   // Felter ud over de faste tekstfelter: næste kontaktdato og prioritet.
   const applyExtra = (rec, b) => {

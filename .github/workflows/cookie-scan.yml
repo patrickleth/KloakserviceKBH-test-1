@@ -1,0 +1,24 @@
+# Månedlig cookiescanning af den live side (scripts/cookie-scan.mjs).
+# Fejler scanningen, sender GitHub en mail til ejeren af repoet. Kan også startes manuelt under Actions.
+name: Cookiescanning
+on:
+  schedule:
+    - cron: '17 6 1 * *'   # den 1. i hver måned kl. 06:17 UTC
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: node scripts/cookie-scan.mjs
+        env:
+          SCAN_URL: ${{ vars.SCAN_URL }}
