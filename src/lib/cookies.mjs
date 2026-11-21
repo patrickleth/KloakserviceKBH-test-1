@@ -5,7 +5,10 @@
 import { createHash } from 'node:crypto';
 
 const NECESSARY = [
-  { name: 'vk_consent_v2', provider: 'Denne hjemmeside', category: 'necessary', type: 'Browserlagring', purpose: 'Husker dit valg i cookiebanneret og dit samtykke-id.', expiry: '12 måneder' }
+  { name: 'vk_consent_v2', provider: 'Denne hjemmeside', category: 'necessary', type: 'Browserlagring', purpose: 'Husker dit valg i cookiebanneret og dit samtykke-id.', expiry: '12 måneder' },
+  // Cloudflares sikkerhedscookies (botbeskyttelse og rate limiting). Strengt nødvendige, sættes af hosting og CDN.
+  { name: '__cf_bm', provider: 'Cloudflare', category: 'necessary', type: 'Cookie', purpose: 'Skelner mennesker fra robotter og beskytter siden mod misbrug.', expiry: '30 minutter' },
+  { name: '_cfuvid', provider: 'Cloudflare', category: 'necessary', type: 'Cookie', purpose: 'Bruges af Cloudflare til at begrænse misbrug (rate limiting).', expiry: 'Når browseren lukkes' }
 ];
 const GOOGLE_ANALYTICS = [
   { name: '_ga', provider: 'Google', category: 'statistics', type: 'Cookie', purpose: 'Skelner mellem besøgende til statistik (Google Analytics).', expiry: '2 år' },

@@ -239,7 +239,7 @@ await test('Samtykke: /cookies.json har mønstre for alle erklærede cookies', a
   const r = await page.request.get(base + '/cookies.json');
   const j = await r.json();
   const names = j.cookies.map(c => c.name);
-  for (const n of ['vk_consent_v2', '_ga', '_ga_*', '_gcl_au', '_fbp']) assert.ok(names.includes(n), n + ' mangler');
+  for (const n of ['vk_consent_v2', '__cf_bm', '_ga', '_ga_*', '_gcl_au', '_fbp']) assert.ok(names.includes(n), n + ' mangler');
   assert.ok(j.cookies.every(c => typeof c.pattern === 'string' && new RegExp(c.pattern)), 'mønster mangler');
   assert.ok(new RegExp(j.cookies.find(c => c.name === '_ga_*').pattern).test('_ga_XYZ123'));
 });
