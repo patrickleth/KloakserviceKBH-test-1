@@ -1,6 +1,6 @@
-// Mini-CRM: lager og API til /administrator-system/. Ren logik uden Netlify-afhængigheder, så det kan testes lokalt.
+// Mini-CRM: lager og API til /administrator-system/. Ren logik uden platformsafhængigheder, så det kan testes lokalt.
 //
-// Lager: et "blob store" med samme metoder som Netlify Blobs (get, getWithMetadata, setJSON, set, list, delete).
+// Lager: et "blob store" med metoderne get, getWithMetadata, setJSON, set, list, delete).
 //   lead/<id>        JSON med leadet, status, noter og historik
 //   fil/<id>/<n>     vedhæftede filer fra formularen
 //   sikkerhed/<...>  tællere til lås ved for mange loginforsøg
@@ -110,7 +110,7 @@ export async function handleAdmin(req, env, deps) {
   const method = req.method;
   const secret = env.ADMIN_SECRET || '';
   const users = parseUsers(env.ADMIN_USERS);
-  if (secret.length < 32 || users.size === 0) return json(503, { ok: false, error: 'ikke-sat-op', message: 'CRM er ikke sat op endnu (ADMIN_USERS og ADMIN_SECRET mangler på Netlify).' });
+  if (secret.length < 32 || users.size === 0) return json(503, { ok: false, error: 'ikke-sat-op', message: 'CRM er ikke sat op endnu (ADMIN_USERS og ADMIN_SECRET mangler i Cloudflare).' });
   const crm = crmStore(deps.store);
   const store = deps.store;
   const hashFor = async u => (await store.get(`bruger/${u}`, { type: 'json' }))?.hash || users.get(u)?.hash;

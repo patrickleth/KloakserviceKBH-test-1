@@ -1,6 +1,6 @@
 # Tjekliste: ny kunde eller migrering fra WordPress
 
-Til Julie og Line. Sæt kryds i rækkefølge. Alt foregår i repoet og i Netlify; ingen adgangskoder eller nøgler i filer, ClickUp eller chat.
+Til Julie og Line. Sæt kryds i rækkefølge. Alt foregår i repoet og i Cloudflare; ingen adgangskoder eller nøgler i filer, ClickUp eller chat.
 
 ## 1. Opret kunden
 
@@ -29,16 +29,15 @@ Til Julie og Line. Sæt kryds i rækkefølge. Alt foregår i repoet og i Netlify
 - [ ] `KUNDE=<mappe> npm run build` og læs `rapport/<mappe>.txt`
 - [ ] `KUNDE=<mappe> npm run qa` giver "Ingen fejl"
 
-## 5. Netlify
+## 5. Cloudflare
 
-- [ ] Nyt site fra repoet. Sæt miljøvariablerne fra README (start med `MODE=test`)
-- [ ] Make-scenarie til leadloggen er oprettet og testet
-- [ ] Mailgun-domænet er verificeret (SPF og DKIM)
+- [ ] Worker fra repoet (se docs/OPSAETNING-CLOUDFLARE.md). Sæt variabler og hemmeligheder fra README (start med `MODE=test`)
+- [ ] Testformular sendt: leadmail og bekræftelse modtaget, leadet ligger i CRM
 - [ ] Testside gennemgået af kontaktperson hos Vækster
 
 ## 6. Sporing og samtykke
 
-- [ ] GTM-ID i site.json eller `GTM_ID` i Netlify
+- [ ] GTM-ID i site.json eller `GTM_ID` i byggekommandoen
 - [ ] Cookiebot: `consent.provider: "cookiebot"` og `cookiebotId`, og domænet tilføjet i Cookiebot
 - [ ] I GTM: Google Ads-konvertering og GA4 lytter på eventet `generate_lead`. Opkald på `tel_click`
 - [ ] Meta-pixel via skabelon i GTM, ikke brugerdefineret HTML
@@ -46,10 +45,10 @@ Til Julie og Line. Sæt kryds i rækkefølge. Alt foregår i repoet og i Netlify
 
 ## 7. Go-live
 
-- [ ] `MODE=production` i Netlify og ny bygning
+- [ ] `MODE=production` i byggekommandoen og ny bygning
 - [ ] `npm run qa` igen mod produktionsbygningen (stopper hvis billeder stadig hentes fra den gamle side)
 - [ ] Send en rigtig testhenvendelse. Tjek mail hos kunden, leadloggen og konverteringen i Google Ads
-- [ ] Domæne i Netlify, DNS flyttet, HTTPS aktivt
+- [ ] Domæne tilføjet på Workeren, DNS flyttet til Cloudflare, HTTPS aktivt
 - [ ] Sitemap indsendt i Search Console (`/sitemap.xml`)
 - [ ] Den gamle WordPress lukkes ned eller låses, når DNS er flyttet
-- [ ] Opdatér kundekortet i ClickUp med Netlify-site og dato for go-live
+- [ ] Opdatér kundekortet i ClickUp med Worker og dato for go-live

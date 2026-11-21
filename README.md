@@ -26,7 +26,8 @@ sites/<kunde>/
   images/            fotos, optimeres automatisk til AVIF/WebP i flere størrelser
   public/            logo, favicon og filer der skal ligge uændret i roden
 src/                 fælles skabelon: komponenter, layout, stil, klientscript
-netlify/             lead-modtager (serverløs funktion)
+server/              formular, mails og mini-CRM (platformsuafhængig logik)
+cloudflare/          Worker, D1/R2-lager (wrangler.jsonc i roden)
 scripts/             ny-kunde, hent-billeder, qa
 tests/               lead.test.mjs (modtageren), e2e.mjs (browser)
 docs/                INDHOLDSFORMAT.md, NY-KUNDE.md (tjekliste)
@@ -85,7 +86,7 @@ Prisberegneren skal sende folk til `https://<domæne>/udfyldt-prisberegner/?id=<
 
 ## Leads
 
-Formularen sender til `/api/lead` (`netlify/functions/lead.mjs`, logik i `netlify/lib/lead-core.mjs`).
+Formularen sender til `/api/lead` (`cloudflare/worker.mjs`, logik i `server/lead-core.mjs`).
 
 Hvert lead leveres op til tre steder på samme tid:
 
@@ -93,17 +94,17 @@ Hvert lead leveres op til tre steder på samme tid:
 2. **Mail til kunden** via Mailgun EU med svar-til den besøgende.
 3. **Mini-CRM** på `/administrator-system/` (se nedenfor), inkl. vedhæftede filer.
 
-Fejler en af dem, går leadet stadig igennem, og der sendes alarm. Fejler alle, svarer modtageren 502, og formularen viser telefonnummeret. Konverteringen (`generate_lead`) sendes først, når modtageren har bekræftet leadet. Spam stoppes af et skjult felt, et tidstjek og Netlifys rate limit (10 pr. minut pr. IP).
+Fejler en af dem, går leadet stadig igennem, og der sendes alarm. Fejler alle, svarer modtageren 502, og formularen viser telefonnummeret. Konverteringen (`generate_lead`) sendes først, når modtageren har bekræftet leadet. Spam stoppes af et skjult felt, et tidstjek og Cloudflares rate limit (10 pr. minut pr. IP).
 
-**Vedhæftede filer:** op til 6 billeder eller PDF. Billeder gøres mindre i browseren (højst 1600 px), og alt i alt højst 4,5 MB, fordi Netlify tager ca. 6 MB pr. forespørgsel. Filerne sendes med mailen til kunden; leadloggen får filnavne. Store videoer kan ikke sendes; så beder formularen folk sende dem på mail.
+**Vedhæftede filer:** op til 6 billeder eller PDF. Billeder gøres mindre i browseren (højst 1600 px), og alt i alt højst 4,5 MB, fordi serveren tager højst ca. 6 MB pr. forespørgsel. Filerne sendes med mailen til kunden; leadloggen får filnavne. Store videoer kan ikke sendes; så beder formularen folk sende dem på mail.
 
-### Miljøvariabler (sættes i Netlify, aldrig i repoet eller ClickUp)
+### Miljøvariabler (sættes i Cloudflare, aldrig i repoet eller ClickUp)
 
 | Variabel | Krævet | Indhold |
 |---|---|---|
 | `KUNDE` | ja | Mappenavn under `sites/` |
 | `MODE` | ja | `production` når siden er live, ellers `test` |
-| `BRAND_NAME` | ja | Firmanavn i mails (SITE_NAME er reserveret af Netlify) |
+| `BRAND_NAME` | ja | Firmanavn i mails |
 | `MAKE_WEBHOOK_URL` | en af de to | Make-scenariet der skriver leadloggen |
 | `MAILGUN_API_KEY`, `MAILGUN_DOMAIN` | en af de to | Mailgun (EU). Nøglen ligger i 1Password |
 | `MAILGUN_REGION` | nej | `eu` (standard) eller `us` |
@@ -137,16 +138,16 @@ Alle kunder får et lille CRM på en skjult adresse: `https://<kundens-domæne>/
 - **Alle formularhenvendelser lander her automatisk** med side, UTM/gclid/fbclid og vedhæftede filer. Manuelle leads (fx telefonopkald) oprettes med "+ Nyt lead".
 - **Detaljevindue:** ring/mail-knapper, alle felter kan rettes, værdi i kr., ansvarlig, noter med navn og tid, historik over ændringer.
 - **Overblik:** nye henvendelser, leads denne måned, værdi af åbne tilbud og vundet denne måned. Søgning på navn, telefon, adresse og opgave.
-- **Sikkerhed:** adgangskoder gemt som scrypt-hash i `ADMIN_USERS`; login-cookie signeret (HMAC-SHA256), HttpOnly, Secure, SameSite=Strict og kun gyldig under `/administrator-system`, udløber efter 12 timer; 5 forkerte forsøg låser brugernavn og IP i 15 minutter; Netlifys rate limit på 60 kald pr. minut; ændringer kræver eget domæne og en særlig header (CSRF-værn); filer vises med sandbox-CSP; siden er noindex, uden sporing og står ikke i sitemap eller robots.txt. Indsendt tekst vises altid som tekst, aldrig som HTML.
-- **Lager:** Netlify Blobs (store `crm`) på kundens eget Netlify-site. Intet ekstra abonnement.
-- **Glemt adgangskode:** brugeren får et engangslink på mail (gyldigt i 30 minutter, højst 3 pr. kvarter). Kræver e-mail i `ADMIN_USERS` og Mailgun (`MAILGUN_API_KEY`, `MAILGUN_DOMAIN`). Den nye kode gemmes i Netlify Blobs, og alle andre sessioner logges ud.
-- **Opsætning:** `npm run admin-bruger -- kunde kunde@firma.dk` → kopiér linjen til `ADMIN_USERS` og sæt `ADMIN_SECRET` i Netlify → deploy. Uden de to variabler viser siden "ikke sat op".
-- Koden: `src/pages/administrator-system/`, `src/scripts/admin.ts`, `netlify/functions/admin.mjs`, `netlify/lib/crm-core.mjs`, `netlify/lib/admin-auth.mjs`. Tests: `npm run test:crm`.
+- **Sikkerhed:** adgangskoder gemt som scrypt-hash i `ADMIN_USERS`; login-cookie signeret (HMAC-SHA256), HttpOnly, Secure, SameSite=Strict og kun gyldig under `/administrator-system`, udløber efter 12 timer; 5 forkerte forsøg låser brugernavn og IP i 15 minutter; Cloudflares rate limit på 60 kald pr. minut; ændringer kræver eget domæne og en særlig header (CSRF-værn); filer vises med sandbox-CSP; siden er noindex, uden sporing og står ikke i sitemap eller robots.txt. Indsendt tekst vises altid som tekst, aldrig som HTML.
+- **Lager:** Cloudflare D1 (leads) og R2 (filer), begge i EU. Hver kundes data er mærket med `SITE_ID`.
+- **Glemt adgangskode:** brugeren får et engangslink på mail (gyldigt i 30 minutter, højst 3 pr. kvarter). Kræver e-mail i `ADMIN_USERS` og Mailgun (`MAILGUN_API_KEY`, `MAILGUN_DOMAIN`). Den nye kode gemmes i CRM-lageret, og alle andre sessioner logges ud.
+- **Opsætning:** `npm run admin-bruger -- kunde kunde@firma.dk` → kopiér linjen til `ADMIN_USERS` og sæt `ADMIN_SECRET` som hemmeligheder i Cloudflare → deploy. Uden de to variabler viser siden "ikke sat op".
+- Koden: `src/pages/administrator-system/`, `src/scripts/admin.ts`, `cloudflare/worker.mjs`, `server/crm-core.mjs`, `server/admin-auth.mjs`. Tests: `npm run test:crm`.
 
 ## Samtykke og sporing
 
 - **Google Consent Mode v2** med alle signaler (ad_storage, ad_user_data, ad_personalization, analytics_storage, functionality_storage, personalization_storage) sat til "denied" som det første i `<head>`.
-- **Cookiebot** (`consent.provider: "cookiebot"` + `cookiebotId`): den certificerede løsning, I bruger i dag. Cookiebot opdaterer Consent Mode, og GTM indlæses efter samtykke. Cookiebot virker kun på domæner, der er tilføjet i Cookiebot, så testversioner på `.netlify.app` bruger det interne banner.
+- **Cookiebot** (`consent.provider: "cookiebot"` + `cookiebotId`): den certificerede løsning, I bruger i dag. Cookiebot opdaterer Consent Mode, og GTM indlæses efter samtykke. Cookiebot virker kun på domæner, der er tilføjet i Cookiebot, så testversioner på `.workers.dev` bruger det interne banner.
 - **Væksters eget banner** (`consent.provider: "intern"`): "Accepter alle", "Afvis alle" og "Tilpas" på lige fod, valg pr. kategori (præferencer, statistik, marketing), og linket "Cookieindstillinger" i footeren åbner valgene igen. Google kræver en *certificeret* CMP for udgivere, der viser Google-annoncer (AdSense o.l.). Annoncører, der kører Google Ads til egen side, skal "kun" sende korrekte Consent Mode v2-signaler, og det gør banneret. Cookiebot logger dog samtykker som dokumentation, hvilket det interne banner ikke gør. Derfor anbefales Cookiebot til kunder i drift.
 - **GTM**: `tracking.gtmId`. Indlæses først efter samtykke til statistik eller marketing (`tracking.consentMode: "basic"`, standard). `"advanced"` indlæser GTM med det samme med alt afvist, så Google kan modellere konverteringer.
 - **Meta Pixel**: `tracking.metaPixelId`. Indlæses kun efter marketing-samtykke, sender PageView og Lead (på takkesiden). Lad feltet være tomt, hvis pixlen ligger i GTM.
@@ -178,22 +179,18 @@ Bloggen findes altid på `/blog/` og kan sættes i menuen med `{ "label": "Blog"
 - `_headers` genereres ved hver bygning med Content-Security-Policy, hvor inline-scripts er låst med SHA-256-hashes, og kun de domæner kunden bruger (GTM, Cookiebot, Meta) er tilladt. Derudover HSTS (uden includeSubDomains, så gamle http-subdomæner ikke rammes), nosniff, X-Frame-Options og Permissions-Policy. Med GTM tillades også Tag Assistant, så sporingen kan tjekkes.
 - GTM-tags af typen "Brugerdefineret HTML" blokeres af CSP. Brug GTM-skabeloner (fx Metas officielle pixelskabelon). Kan det ikke undgås, sæt `csp.gtmCustomHtml: true` i site.json.
 - Eksterne domæner til fx en kortwidget tilføjes i `csp.extraScript`, `csp.extraConnect` og `csp.extraImg`.
-- **npm audit** viser 10 "high" fra picomatch (ReDoS, GHSA-fc5q-39xc-vjpf). Der findes ingen rettet version endnu. Det rammer kun byggeværktøjerne på udviklerens maskine og Netlifys byggeserver, ikke den færdige side. `overrides` i package.json løfter picomatch til nyeste version. Tjek igen ved hver opdatering.
+- **npm audit** viser 10 "high" fra picomatch (ReDoS, GHSA-fc5q-39xc-vjpf). Der findes ingen rettet version endnu. Det rammer kun byggeværktøjerne på udviklerens maskine og Cloudflares byggeserver, ikke den færdige side. `overrides` i package.json løfter picomatch til nyeste version. Tjek igen ved hver opdatering.
 
 ## Deploy
 
-Ét repo, ét Netlify-site pr. kunde:
+Ét repo og én Cloudflare Worker pr. kunde. Hele opsætningen står i `docs/OPSAETNING-CLOUDFLARE.md`:
 
-1. Netlify: *Add new site* fra repoet. Build-indstillingerne læses fra `netlify.toml`.
-2. Sæt miljøvariablerne ovenfor. Start med `MODE=test`.
-3. Gennemgå testsiden på `<site>.netlify.app`, kør `npm run qa`, og send en testhenvendelse (med `MODE=production` på et preview).
-4. Skift til `MODE=production`, tilføj domænet i Netlify og flyt DNS.
+1. Worker fra repoet med Workers Builds. Byggekommando `KUNDE=<mappe> MODE=test npm run build`, deploy `npx wrangler deploy`.
+2. Sæt variabler og hemmeligheder (tabellen ovenfor). Start med `MODE=test`.
+3. Gennemgå testsiden på `<worker>.workers.dev`, kør `npm run qa`, og send en testhenvendelse.
+4. Skift til `MODE=production`, tilføj domænet på Workeren og flyt DNS til Cloudflare.
 
-**Ændringer i skabelonen** (`src/`) rammer alle kunder ved næste bygning. Arbejd derfor sådan:
-
-1. Lav ændringen på en branch og åbn en pull request. Netlify bygger et preview pr. kunde-site.
-2. Canary: flet først til branchen `canary`, som demokunden og én udvalgt kunde bygger fra. Kør `npm test` og se siderne igennem.
-3. Flet til `main`, når canary har kørt uden problemer, og tag en version (`git tag v0.2.0`) som dokumentation. Skal en kunde låses til en ældre version, laves en release-branch (fx `release/0.1`), og kundens Netlify-site peges på den under *Branches and deploy contexts*.
+**Ændringer i skabelonen** rulles ud til hver kunde som et forslag (pull request) i kundens eget repo: bygning, tests og billeder før og efter, og først efter godkendelse går ændringen live. Hver side har sit versionsnummer.
 
 ## Exit-pakke
 

@@ -20,8 +20,8 @@ export default defineConfig({
   output: 'static',
   trailingSlash: 'always',
   publicDir,
-  // På Netlify og Cloudflare bygges altid til dist/current, så netlify.toml og wrangler.jsonc kan pege på én fast mappe.
-  outDir: process.env.NETLIFY || process.env.WORKERS_CI || process.env.CF_PAGES ? './dist/current' : `./dist/${KUNDE}`,
+  // På Cloudflare bygges altid til dist/current, så wrangler.jsonc kan pege på én fast mappe.
+  outDir: process.env.WORKERS_CI || process.env.CF_PAGES ? './dist/current' : `./dist/${KUNDE}`,
   build: {
     format: 'directory',
     // Ingen inline CSS, så Content-Security-Policy kan nøjes med style-src 'self'.
@@ -29,7 +29,7 @@ export default defineConfig({
     assets: 'assets'
   },
   image: {
-    // Fjernbilleder fra kundens nuværende side (under migrering) hentes og optimeres til AVIF/WebP ved bygning på Netlify.
+    // Fjernbilleder fra kundens nuværende side (under migrering) hentes og optimeres til AVIF/WebP ved bygning på Cloudflare.
     // Lokalt (uden netadgang) vises de, som de er. Sæt OPTIMIZE_REMOTE=true for at tvinge det.
     remotePatterns: REMOTE_OPT ? [{ protocol: 'https', hostname: new URL(site.domain).hostname }, { protocol: 'https', hostname: 'www.' + new URL(site.domain).hostname.replace(/^www\./, '') }] : []
   },

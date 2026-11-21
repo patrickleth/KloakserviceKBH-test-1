@@ -1,8 +1,8 @@
 // Kør: npm run test:lead
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { handleLead, confirmMail } from '../netlify/lib/lead-core.mjs';
-import { crmStore } from '../netlify/lib/crm-core.mjs';
+import { handleLead, confirmMail } from '../server/lead-core.mjs';
+import { crmStore } from '../server/crm-core.mjs';
 
 const NOW = 1_800_000_000_000;
 const env = { BRAND_NAME: 'Testfirma', MAKE_WEBHOOK_URL: 'https://hook.eu1.make.com/x', MAILGUN_API_KEY: 'k', MAILGUN_DOMAIN: 'mg.example.dk', LEAD_TO: 'kunde@example.dk', ALERT_EMAIL: 'alarm@example.dk', CONFIRM_TO_LEAD: 'false' };
@@ -238,7 +238,7 @@ test('bekræftelse kan slås fra pr. kunde', async () => {
 });
 
 test('mailskabeloner: bekræftelsen gentager aldrig den besøgendes tekst og har kun faste links', async () => {
-  const { confirmMail: tpl } = await import('../netlify/lib/mail-templates.mjs');
+  const { confirmMail: tpl } = await import('../server/mail-templates.mjs');
   const brand = { name: 'Firma', domain: 'https://firma.dk', phone: { display: '12 34 56 78', e164: '+4512345678' }, responseNote: 'Vi svarer inden for 2 timer' };
   const m = tpl({ navn: 'Jens <b>Hansen</b>', beskrivelse: 'Køb billig viagra på spam.example', by: 'http://ond.example' }, brand, {}, { origin: 'https://firma.dk' });
   assert.doesNotMatch(m.html, /viagra|ond\.example|<b>/i);
@@ -249,7 +249,7 @@ test('mailskabeloner: bekræftelsen gentager aldrig den besøgendes tekst og har
 });
 
 test('mailskabeloner: leadmailen escaper HTML og har knapper til at ringe og svare', async () => {
-  const { leadMail: tpl } = await import('../netlify/lib/mail-templates.mjs');
+  const { leadMail: tpl } = await import('../server/mail-templates.mjs');
   const m = tpl({ id: 'abc', navn: 'Jens <script>', telefon: '12 34 56 78', email: 'jens@example.dk', by: 'Hvidovre', ydelser: ['Kloakspuling'], beskrivelse: 'Linje 1\n<img src=x>' }, { name: 'Firma' }, { origin: 'https://firma.dk', crm: true });
   assert.doesNotMatch(m.html, /<script>|<img src=x>/);
   assert.match(m.html, /href="tel:12345678"/);

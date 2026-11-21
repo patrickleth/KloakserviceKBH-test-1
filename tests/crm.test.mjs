@@ -1,9 +1,9 @@
 // Tests af mini-CRM'et (login, lås, leads, filer) og af at lead-modtageren gemmer i CRM'et.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { handleAdmin, crmStore } from '../netlify/lib/crm-core.mjs';
-import { hashPassword, readSession } from '../netlify/lib/admin-auth.mjs';
-import { handleLead } from '../netlify/lib/lead-core.mjs';
+import { handleAdmin, crmStore } from '../server/crm-core.mjs';
+import { hashPassword, readSession } from '../server/admin-auth.mjs';
+import { handleLead } from '../server/lead-core.mjs';
 
 function memStore() {
   const m = new Map();

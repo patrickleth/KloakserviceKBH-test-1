@@ -198,7 +198,7 @@ if (vid && (matchMedia('(prefers-reduced-motion: reduce)').matches || (navigator
 
 // ---------- Filer: billeder gøres mindre i browseren, før de sendes ----------
 const MAX_FILES = 6;
-const MAX_TOTAL = 4.5 * 1024 * 1024; // Netlify tillader ca. 6 MB pr. forespørgsel
+const MAX_TOTAL = 4.5 * 1024 * 1024; // serveren tager højst ca. 6 MB pr. forespørgsel
 async function shrink(file: File): Promise<File> {
   if (!file.type.startsWith('image/') || file.type === 'image/gif' || file.type === 'image/svg+xml') return file;
   if (file.size < 400 * 1024 && file.type === 'image/jpeg') return file;

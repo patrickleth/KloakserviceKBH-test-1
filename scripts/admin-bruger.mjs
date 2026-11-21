@@ -1,8 +1,8 @@
 // Laver en brugerlinje til mini-CRM'et. Kør:  npm run admin-bruger -- <brugernavn> <email>
 // E-mailen bruges til "Glemt adgangskode".
-// Adgangskoden indtastes skjult. Resultatet sættes i miljøvariablen ADMIN_USERS på Netlify (flere brugere adskilles med komma).
+// Adgangskoden indtastes skjult. Resultatet sættes i miljøvariablen ADMIN_USERS i Cloudflare (Workerens hemmeligheder, flere brugere adskilles med komma).
 // Gem aldrig linjen i repoet eller i ClickUp.
-import { hashPassword } from '../netlify/lib/admin-auth.mjs';
+import { hashPassword } from '../server/admin-auth.mjs';
 import { randomBytes } from 'node:crypto';
 
 const user = (process.argv[2] || '').toLowerCase();
@@ -27,6 +27,6 @@ async function ask(q) {
 
 const pw = await ask(`Adgangskode til ${user} (mindst 10 tegn): `);
 try {
-  console.log(`\nADMIN_USERS-linje (tilføj til Netlify):\n${user}:${email ? email + ':' : ''}${hashPassword(pw)}`);
+  console.log(`\nADMIN_USERS-linje (tilføj som hemmelighed i Cloudflare):\n${user}:${email ? email + ':' : ''}${hashPassword(pw)}`);
   console.log(`\nHar sitet ikke ADMIN_SECRET endnu, så brug fx denne:\n${randomBytes(32).toString('base64url')}`);
 } catch (e) { console.error(e.message); process.exit(1); }

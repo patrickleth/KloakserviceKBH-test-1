@@ -1,9 +1,9 @@
 // Login til mini-CRM'et (/administrator-system/). Ingen afhængigheder ud over Node.
 //
 // Brugere:  ADMIN_USERS = "patrick:ple@vaekster.dk:scrypt$16384$<salt>$<hash>,kunde:kunde@firma.dk:scrypt$..."  (lav linjen med: npm run admin-bruger)
-//           E-mailen bruges til "Glemt adgangskode". En ny kode gemmes i Netlify Blobs og går forud for koden i ADMIN_USERS.
+//           E-mailen bruges til "Glemt adgangskode". En ny kode gemmes i CRM-lageret (D1) og går forud for koden i ADMIN_USERS.
 // Session:  ADMIN_SECRET = mindst 32 tilfældige tegn. Bruges til at signere sessionscookien (HMAC-SHA256).
-// Begge sættes KUN som miljøvariabler på Netlify, aldrig i repoet.
+// Begge sættes KUN som hemmeligheder i Cloudflare, aldrig i repoet.
 import { scryptSync, randomBytes, timingSafeEqual, createHmac, createHash } from 'node:crypto';
 
 export const COOKIE = 'vk_admin';

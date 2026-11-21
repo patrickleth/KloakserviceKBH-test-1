@@ -9,8 +9,8 @@ Alle noter fra overførslen står i `notes` i hver sides frontmatter og samles i
 Før go-live:
 - [ ] `npm run hent-billeder` (billeder og video hentes stadig fra WordPress)
 - [ ] `KUNDE=kloakservicekbh WP_URL=https://kloakservicekbh.dk npm run importer-wordpress` for de resterende 186 af 196 blogindlæg (de 10 nyeste er importeret). `blog.permalink` er `"root"`, så indlæggene beholder deres nuværende adresser, og der skal ingen viderestillinger til. De 27 døde links, QA melder nu, peger på indlæg, der kommer med i importen
-- [ ] Mini-CRM: `npm run admin-bruger -- kloakservicekbh`, sæt `ADMIN_USERS` og `ADMIN_SECRET` i Netlify
-- [ ] `consent.provider: "cookiebot"` når domænet peger på Netlify
+- [ ] Mini-CRM: `npm run admin-bruger -- kloakservicekbh`, sæt `ADMIN_USERS` og `ADMIN_SECRET` i Cloudflare
+- [ ] `consent.provider: "cookiebot"` når domænet peger på Cloudflare
 - [ ] Ny cookiepolitik (den nuværende er generisk og nævner nyhedsbrev, login og køb)
 - [ ] Afklar med kunden:
   - erfaring: 25, 35 og "over 20" år på forskellige sider

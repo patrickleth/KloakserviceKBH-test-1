@@ -1,4 +1,4 @@
-// Væksters byggeintegration. Kører efter build og skriver de filer, Netlify skal bruge:
+// Væksters byggeintegration. Kører efter build og skriver de ekstra filer, siden skal bruge:
 // robots.txt, sitemap.xml, _headers (med CSP-hashes), _redirects og en byggerapport UDEN FOR dist.
 import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';

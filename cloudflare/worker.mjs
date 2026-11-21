@@ -1,9 +1,9 @@
 // Cloudflare Worker: serverer den statiske side (dist/current) og håndterer formularen og mini-CRM'et.
 //   /api/lead                    -> lead-core (gem i CRM, mail til kunden, bekræftelse til den besøgende)
 //   /administrator-system/api/*  -> crm-core (login, leads, opsætning)
-// Alt andet går direkte til de statiske filer. Samme logik som på Netlify, kun lageret er skiftet (se cf-store.mjs).
-import { handleLead } from '../netlify/lib/lead-core.mjs';
-import { handleAdmin, crmStore } from '../netlify/lib/crm-core.mjs';
+// Alt andet går direkte til de statiske filer. Logikken ligger i server/, lageret i cf-store.mjs (D1 og R2).
+import { handleLead } from '../server/lead-core.mjs';
+import { handleAdmin, crmStore } from '../server/crm-core.mjs';
 import { cfStore } from './cf-store.mjs';
 
 const tooMany = () => new Response(JSON.stringify({ ok: false, fejl: 'For mange forsøg. Prøv igen om lidt.' }), {

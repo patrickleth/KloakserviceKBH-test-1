@@ -2,8 +2,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-if (process.env.NETLIFY && !process.env.KUNDE) {
-  throw new Error('KUNDE er ikke sat i Netlifys miljøvariabler. Sæt KUNDE=<mappenavn under sites/>, ellers bygges demokunden.');
+if (process.env.WORKERS_CI && !process.env.KUNDE) {
+  throw new Error('KUNDE er ikke sat i byggekommandoen på Cloudflare. Sæt KUNDE=<mappenavn under sites/>, ellers bygges demokunden.');
 }
 export const KUNDE = process.env.KUNDE || 'eksempel';
 export const MODE = process.env.MODE === 'production' ? 'production' : 'test';
@@ -29,7 +29,7 @@ export function loadSite() {
   site.partners ??= [];
   site.redirects ??= [];
   site.tracking ??= {};
-  // GTM-ID kan også sættes som miljøvariabel på Netlify (GTM_ID), fx forskelligt for test og produktion.
+  // GTM-ID kan også sættes som miljøvariabel ved bygning (GTM_ID), fx forskelligt for test og produktion.
   if (process.env.GTM_ID) site.tracking.gtmId = process.env.GTM_ID;
   site.consent ??= { provider: 'intern' };
   site.csp ??= {};
@@ -123,8 +123,8 @@ export function postPath(id, site = loadSite()) {
   return site.blog?.permalink === 'root' ? `/${id}/` : `/blog/${id}/`;
 }
 
-/** Optimér fjernbilleder fra kundens domæne ved bygning (kræver netadgang, derfor kun på Netlify som standard). */
-export const REMOTE_OPT = process.env.NETLIFY === 'true' || !!process.env.WORKERS_CI || !!process.env.CF_PAGES || process.env.OPTIMIZE_REMOTE === 'true';
+/** Optimér fjernbilleder fra kundens domæne ved bygning (kræver netadgang, derfor kun på Cloudflare som standard). */
+export const REMOTE_OPT = !!process.env.WORKERS_CI || !!process.env.CF_PAGES || process.env.OPTIMIZE_REMOTE === 'true';
 
 export function hasBlog() {
   if (loadSite().blog?.enabled === false) return false;

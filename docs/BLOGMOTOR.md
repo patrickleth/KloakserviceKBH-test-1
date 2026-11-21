@@ -8,7 +8,7 @@ Outrank og lignende værktøjer publicerer via WordPress-plugins. På en statisk
 ## Sådan kommer et indlæg ud på siden
 1. En producent skriver `sites/<kunde>/blog/<slug>.md` med frontmatter (title, description, h1, date, keyword, image, related).
 2. Filen committes til GitHub (direkte eller som pull request til godkendelse).
-3. Netlify bygger siden. Bygningen validerer formatet, QA tjekker links og overskrifter, og indlægget kommer i `post-sitemap.xml`.
+3. Cloudflare bygger siden. Bygningen validerer formatet, QA tjekker links og overskrifter, og indlægget kommer i `post-sitemap.xml`.
 
 ## Producenter (adaptere)
 - **Claude (anbefalet start):** et planlagt job pr. kunde, der hver uge vælger næste søgeord fra kundens emneliste, skriver indlægget ud fra kundens egne sider og anmeldelser, linker til relevante ydelses- og bysider (`related`) og åbner en pull request.

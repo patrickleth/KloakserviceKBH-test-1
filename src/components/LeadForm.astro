@@ -2,7 +2,7 @@
 // Tilbudsformular i et kort. To varianter (site.form.variant):
 //   "kort" (standard): ét trin som på de bedst konverterende sider: navn, e-mail, telefon, adresse, beskrivelse.
 //   "trin": tre trin med valg af ydelser.
-// Logikken ligger i src/scripts/site.ts, modtageren i netlify/functions/lead.mjs.
+// Logikken ligger i src/scripts/site.ts, modtageren i server/lead-core.mjs (kaldt fra cloudflare/worker.mjs).
 import { site, abs, href, telHref, IS_TEST, TEST_FORM } from '../lib/site';
 import Img from './Img.astro';
 import FileField from './FileField.astro';

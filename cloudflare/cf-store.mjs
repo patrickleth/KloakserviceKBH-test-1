@@ -1,4 +1,4 @@
-// Lager til Cloudflare: samme små metoder som Netlify Blobs (get, setJSON, set, delete, list, getWithMetadata),
+// Lager til Cloudflare: små nøgle/værdi-metoder (get, setJSON, set, delete, list, getWithMetadata),
 // så crm-core og lead-core virker uændret. JSON (leads, opsætning, brugere) ligger i D1, filer ligger i R2.
 // Både D1-databasen og R2-bucketten er oprettet med EU-jurisdiktion, så data gemmes i EU.
 // Hver række har et site (kundens id), så én database kan bære alle kunder, når portalen kommer.

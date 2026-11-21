@@ -1,9 +1,9 @@
-// Lead-modtager. Ren funktion uden Netlify-afhængigheder, så den kan testes med en falsk fetch.
+// Lead-modtager. Ren funktion uden platformsafhængigheder, så den kan testes med en falsk fetch.
 //
 // Princip: et lead må aldrig gå tabt. Hvert lead leveres op til tre steder samtidig:
 //   1) leadloggen (Make-webhook, som skriver til Google Sheet og/eller Pipedrive)
 //   2) en mail til kunden via Mailgun
-//   3) kundens mini-CRM på /administrator-system/ (Netlify Blobs, se crm-core.mjs)
+//   3) kundens mini-CRM på /administrator-system/ (D1 og R2 i Cloudflare, se crm-core.mjs)
 // Fejler en af dem, sendes en alarm til Vækster, og den besøgende får stadig en kvittering.
 // Fejler alle, svarer funktionen 502, så formularen viser telefonnummeret i stedet for "tak".
 
@@ -12,7 +12,7 @@ import { leadMail as leadTemplate, confirmMail as confirmTemplate } from './mail
 const LIMITS = { navn: 120, telefon: 30, email: 160, adresse: 160, postnr: 8, by: 80, andet: 200, fundet: 60, beskrivelse: 4000, side: 300, leadtype: 60, utm: 600, gclid: 200, fbclid: 300 };
 const MIN_FILL_MS = 2500;      // udfyldt hurtigere end det (målt i browseren) er en robot
 const MAX_BODY = 32 * 1024;    // 32 KB uden filer
-// Med filer: Netlify tillader ca. 6 MB pr. forespørgsel. Billeder gøres mindre i browseren før afsendelse.
+// Med filer: højst ca. 6 MB pr. forespørgsel. Billeder gøres mindre i browseren før afsendelse.
 const MAX_MULTIPART = 6 * 1024 * 1024;
 const MAX_FILES = 6;
 const MAX_FILES_BYTES = 5 * 1024 * 1024;
@@ -76,14 +76,14 @@ export async function handleLead(req, env, deps = {}) {
   const now = (deps.now || Date.now)();
   const log = deps.log || console.error;
   const siteName = env.BRAND_NAME || 'hjemmesiden';
-  // Alarm og kvittering må ikke forsinke svaret til den besøgende. På Netlify kører de videre efter svaret.
+  // Alarm og kvittering må ikke forsinke svaret til den besøgende. De kører videre efter svaret (waitUntil).
   const background = [];
   const later = p => { const safe = p.catch(e => log('[lead] baggrundsopgave fejlede', e?.message)); if (deps.waitUntil) deps.waitUntil(safe); else background.push(safe); };
   const finish = async res => { if (background.length) await Promise.all(background); return res; };
 
   if (req.method !== 'POST') return json(405, { ok: false, error: 'method' }, { Allow: 'POST' });
 
-  // Kun formularer fra kundens eget domæne (og Netlify-forhåndsvisninger, hvis tilladt).
+  // Kun formularer fra kundens eget domæne (og ALLOWED_ORIGINS, hvis sat).
   const origin = req.headers.get('origin');
   if (origin) {
     const allowed = (env.ALLOWED_ORIGINS || '').split(',').map(s => s.trim()).filter(Boolean);
@@ -177,7 +177,7 @@ export async function handleLead(req, env, deps = {}) {
     }
   }
 
-  // Sidste udvej: hele leadet i funktionsloggen (Netlify gemmer den kortvarigt), så det kan genskabes.
+  // Sidste udvej: hele leadet i funktionsloggen (Cloudflare gemmer den kortvarigt), så det kan genskabes.
   if (!okLog && !okMail && !okCrm) { log('[lead] TABT-LEAD ' + JSON.stringify(lead)); return finish(json(502, { ok: false, error: 'levering', id: lead.id })); }
 
   // Bekræftelse til den besøgende (standard slået til, CONFIRM_TO_LEAD=false slår fra). Fejl her påvirker ikke svaret.

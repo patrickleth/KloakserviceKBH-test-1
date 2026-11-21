@@ -55,17 +55,11 @@ Næste skridt (se også docs/NY-KUNDE.md):
      en produktionsbygning stopper, hvis der står "(demo)" eller "opdigtet" nogen steder.
   4. Se siden lokalt:      KUNDE=${slug} npm run dev
   5. Byg og tjek:          KUNDE=${slug} npm run build && KUNDE=${slug} npm run qa
-  6. Netlify: nyt site fra repoet, og sæt disse miljøvariabler (aldrig i repoet):
-       KUNDE=${slug}
-       MODE=test                  (production når siden skal live)
-       SITE_NAME=${site.name}
-       MAKE_WEBHOOK_URL=...       (leadlog)
-       MAILGUN_API_KEY=...        (fra 1Password, aldrig i ClickUp)
-       MAILGUN_DOMAIN=...
-       MAILGUN_REGION=eu
-       LEAD_TO=...                (kundens mail)
-       LEAD_BCC=...               (valgfri, fx Væksters leadpostkasse)
-       ALERT_EMAIL=...            (Væksters alarmmodtager)
-       ALERT_WEBHOOK_URL=...      (valgfri, fx Slack/Make, bruges hvis Mailgun er nede)
-       CONFIRM_TO_LEAD=true       (valgfri kvitteringsmail til den besøgende)
+  6. Cloudflare: se docs/OPSAETNING-CLOUDFLARE.md. Kort fortalt:
+       Worker fra repoet med byggekommandoen KUNDE=${slug} MODE=test npm run build
+       Variabler: SITE_ID=${slug}, BRAND_NAME, MAILGUN_REGION=eu, MAILGUN_DOMAIN=leads.indsendelse.dk,
+                  CONFIRM_MAILGUN_DOMAIN=svar.indsendelse.dk
+       Hemmeligheder (aldrig i repoet): ADMIN_USERS, ADMIN_SECRET, LEAD_TO (kundens mail),
+                  MAILGUN_API_KEY (sending key til leads), CONFIRM_MAILGUN_API_KEY (sending key til svar)
+       Valgfrit: LEAD_BCC, ALERT_EMAIL, ALERT_WEBHOOK_URL, MAKE_WEBHOOK_URL
 `);

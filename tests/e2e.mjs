@@ -9,7 +9,7 @@ import assert from 'node:assert/strict';
 import { chromium } from 'playwright';
 
 const KUNDE = 'eksempel';
-execSync('npx astro build', { env: { ...process.env, KUNDE, MODE: 'production', GTM_ID: 'GTM-E2ETEST', META_PIXEL_ID: '1234567890', NETLIFY: '' }, stdio: 'ignore' });
+execSync('npx astro build', { env: { ...process.env, KUNDE, MODE: 'production', GTM_ID: 'GTM-E2ETEST', META_PIXEL_ID: '1234567890', WORKERS_CI: '' }, stdio: 'ignore' });
 const root = path.resolve('dist', KUNDE);
 const types = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.jpg': 'image/jpeg', '.webp': 'image/webp', '.avif': 'image/avif', '.woff2': 'font/woff2' };
 // Serverer de genererede sikkerhedsheadere (_headers, blokken for /*), så CSP også testes.
