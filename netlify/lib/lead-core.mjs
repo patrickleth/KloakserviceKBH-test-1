@@ -7,6 +7,8 @@
 // Fejler en af dem, sendes en alarm til Vækster, og den besøgende får stadig en kvittering.
 // Fejler alle, svarer funktionen 502, så formularen viser telefonnummeret i stedet for "tak".
 
+import { leadMail as leadTemplate, confirmMail as confirmTemplate } from './mail-templates.mjs';
+
 const LIMITS = { navn: 120, telefon: 30, email: 160, adresse: 160, postnr: 8, by: 80, andet: 200, fundet: 60, beskrivelse: 4000, side: 300, leadtype: 60, utm: 600, gclid: 200, fbclid: 300 };
 const MIN_FILL_MS = 2500;      // udfyldt hurtigere end det (målt i browseren) er en robot
 const MAX_BODY = 32 * 1024;    // 32 KB uden filer
@@ -61,39 +63,13 @@ function mailgun(env, fetchFn) {
   };
 }
 
-function leadMail(lead, siteName) {
-  const rows = [
-    ['Navn', lead.navn], ['Telefon', lead.telefon], ['E-mail', lead.email],
-    ['Adresse', [lead.adresse, [lead.postnr, lead.by].filter(Boolean).join(' ')].filter(Boolean).join(', ')],
-    ['Opgave', [...lead.ydelser, lead.andet].filter(Boolean).join(', ')],
-    ['Beskrivelse', lead.beskrivelse],
-    ['Fandt os via', lead.fundet],
-    ['Vedhæftet', (lead.filer || []).map(f => f.navn).join(', ')],
-    ['Sendt fra', lead.side], ['Lead-id', lead.id]
-  ].filter(([, v]) => v);
-  const text = rows.map(([k, v]) => `${k}: ${v}`).join('\n') + `\n\nSvar direkte på denne mail for at skrive til ${lead.navn}.`;
-  const html = `<p>Ny henvendelse fra ${esc(siteName)}.</p><table cellpadding="6" style="border-collapse:collapse">${rows.map(([k, v]) => `<tr><td style="vertical-align:top;color:#555"><strong>${esc(k)}</strong></td><td>${esc(v).replace(/\n/g, '<br>')}</td></tr>`).join('')}</table><p>Svar direkte på denne mail for at skrive til ${esc(lead.navn)}.</p>`;
-  const what = lead.ydelser[0] || lead.andet || 'Forespørgsel';
-  return { subject: `Ny henvendelse: ${what} | ${lead.navn}`, text, html };
-}
-
 /**
  * @param {Request} req
  * @param {Record<string,string|undefined>} env
  * @param {{ fetch?: typeof fetch, now?: () => number, log?: (...a:any[]) => void, waitUntil?: (p: Promise<any>) => void, crm?: { saveFromForm: Function } | null }} deps
  */
-/** Bekræftelsesmail til den besøgende: ren tekst, ingen links og ingen gentagelse af det, den besøgende skrev. */
-export function confirmMail(lead, siteName, env = {}) {
-  const raw = String(lead.navn || '').trim();
-  // Navnet er det eneste fra formularen, der kommer med. Ligner det et link eller reklame, bruges det ikke.
-  const safeName = raw && raw.length <= 40 && !/(https?:|www\.|\.[a-z]{2,}(\/|\b)|@|[<>])/i.test(raw) ? raw.split(/\s+/)[0] : '';
-  const promise = env.CONFIRM_PROMISE || 'hurtigst muligt';
-  const phone = env.CONFIRM_PHONE ? `\n\nHaster det, så ring på ${env.CONFIRM_PHONE}.` : '';
-  return {
-    subject: `Tak for din henvendelse til ${siteName}`,
-    text: `Hej${safeName ? ' ' + safeName : ''}\n\nTak for din henvendelse til ${siteName}. Vi har modtaget den og vender tilbage ${promise}.${phone}\n\nVenlig hilsen\n${siteName}\n\n--\nDu får denne mail, fordi kontaktformularen på vores hjemmeside er udfyldt med din e-mailadresse. Var det ikke dig, kan du se bort fra den.`
-  };
-}
+/** Bekræftelsesmail til den besøgende (se mail-templates.mjs). Beholdt her for bagudkompatibilitet. */
+export function confirmMail(lead, brandOrName, env = {}, opts = {}) { return confirmTemplate(lead, brandOrName, env, opts); }
 
 export async function handleLead(req, env, deps = {}) {
   const fetchFn = deps.fetch || fetch;
@@ -168,6 +144,11 @@ export async function handleLead(req, env, deps = {}) {
     return json(500, { ok: false, error: 'konfiguration' });
   }
   const send = env.MAILGUN_API_KEY && env.MAILGUN_DOMAIN ? mailgun(env, fetchFn) : null;
+  // Branding til mails (logo, farver, kontaktinfo) fra /mail-brand.json. Mangler den, bruges navn og telefon fra miljøet.
+  let brand = null;
+  try { brand = deps.brand ? await (typeof deps.brand === 'function' ? deps.brand() : deps.brand) : null; } catch (e) { log('[lead] mail-brand kunne ikke læses', e?.message); }
+  const selfOrigin = new URL(req.url).origin;
+  const leadMail = () => leadTemplate(lead, brand || siteName, { origin: selfOrigin, crm: hasCrm, env });
   // Mail er ikke sat op, men leadet gemmes i CRM: skriv det i loggen, så en manglende leadmail ikke går ubemærket hen.
   if (!hasMail) log(`[lead] Leadmail sendes ikke. Mangler: ${['MAILGUN_API_KEY', 'MAILGUN_DOMAIN', 'LEAD_TO'].filter(k => !env[k]).join(', ')}`);
   const from = env.LEAD_FROM || `${siteName} <hjemmeside@${env.MAILGUN_DOMAIN}>`;
@@ -175,7 +156,7 @@ export async function handleLead(req, env, deps = {}) {
   const channels = {
     log: hasMake ? withTimeout(fetchFn, env.MAKE_WEBHOOK_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(lead) })
       .then(r => { if (!r.ok) throw new Error(`Make svarede ${r.status}`); return true; }) : Promise.reject(new Error('ikke sat op')),
-    mail: hasMail ? (() => { const m = leadMail(lead, siteName); return send({ from, to: env.LEAD_TO, bcc: env.LEAD_BCC, 'h:Reply-To': `${quoteName(lead.navn)} <${lead.email}>`, subject: m.subject, text: m.text, html: m.html, 'o:tag': 'lead' }, undefined, attachments); })() : Promise.reject(new Error('ikke sat op')),
+    mail: hasMail ? (() => { const m = leadMail(); return send({ from, to: env.LEAD_TO, bcc: env.LEAD_BCC, 'h:Reply-To': `${quoteName(lead.navn)} <${lead.email}>`, subject: m.subject, text: m.text, html: m.html, 'o:tag': 'lead' }, undefined, attachments); })() : Promise.reject(new Error('ikke sat op')),
     crm: hasCrm ? Promise.resolve().then(() => deps.crm.saveFromForm(lead, attachments, now)) : Promise.reject(new Error('ikke sat op'))
   };
   const [logRes, mailRes, crmRes] = await Promise.allSettled([channels.log, channels.mail, channels.crm]);
@@ -187,7 +168,7 @@ export async function handleLead(req, env, deps = {}) {
     const why = [failLog && `leadlog: ${logRes.reason?.message}`, failMail && `mail: ${mailRes.reason?.message}`, failCrm && `crm: ${crmRes.reason?.message}`].filter(Boolean).join('; ');
     log(`[lead] ${lead.id} delvis fejl: ${why}`);
     // Alarmen indeholder hele leadet, så det kan reddes manuelt.
-    const alertText = `Lead ${lead.id} på ${siteName} blev ikke leveret fuldt ud.\nFejl: ${why}\n\n${leadMail(lead, siteName).text}`;
+    const alertText = `Lead ${lead.id} på ${siteName} blev ikke leveret fuldt ud.\nFejl: ${why}\n\n${leadMail().text}`;
     if (!okMail && env.ALERT_WEBHOOK_URL) {
       later(withTimeout(fetchFn, env.ALERT_WEBHOOK_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text: alertText, lead }) }, SIDE_TIMEOUT_MS));
     }
@@ -208,9 +189,9 @@ export async function handleLead(req, env, deps = {}) {
       if (deps.crm?.confirmOnce && !(await deps.crm.confirmOnce(lead.email, now))) { log(`[lead] ${lead.id} bekræftelse sprunget over: adressen har fået én inden for et døgn`); return false; }
       // Egen nøgle til bekræftelsesdomænet (Mailgun sending keys gælder kun ét domæne). Ellers bruges hovednøglen.
       const sendC = mailgun({ ...env, MAILGUN_DOMAIN: confirmDomain, MAILGUN_API_KEY: env.CONFIRM_MAILGUN_API_KEY || env.MAILGUN_API_KEY }, fetchFn);
-      const m = confirmMail(lead, siteName, env);
+      const m = confirmTemplate(lead, brand || siteName, env, { origin: selfOrigin });
       try {
-        return await sendC({ from: env.CONFIRM_FROM || `${siteName} <bekraeftelse@${confirmDomain}>`, to: lead.email, 'h:Reply-To': env.LEAD_TO, subject: m.subject, text: m.text, 'o:tag': 'bekraeftelse', 'o:tracking': 'no' }, SIDE_TIMEOUT_MS);
+        return await sendC({ from: env.CONFIRM_FROM || `${siteName} <bekraeftelse@${confirmDomain}>`, to: lead.email, 'h:Reply-To': env.LEAD_TO, subject: m.subject, text: m.text, html: m.html, 'o:tag': 'bekraeftelse', 'o:tracking': 'no' }, SIDE_TIMEOUT_MS);
       } catch (e) {
         // Mislykket afsendelse må ikke bruge døgnets ene bekræftelse.
         await deps.crm?.confirmRelease?.(lead.email).catch(() => {});

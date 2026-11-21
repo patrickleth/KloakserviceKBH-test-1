@@ -6,7 +6,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { load as yamlLoad } from 'js-yaml';
-import { loadSite, KUNDE, IS_TEST, ROOT, SITE_DIR } from '../lib/config.mjs';
+import { loadSite, KUNDE, IS_TEST, ROOT, SITE_DIR, REMOTE_OPT } from '../lib/config.mjs';
 
 const walk = dir => fs.readdirSync(dir, { withFileTypes: true }).flatMap(e => {
   const p = path.join(dir, e.name);
@@ -214,6 +214,26 @@ ${IS_TEST ? '  X-Robots-Tag: noindex, nofollow\n' : ''}
         }
         if (thinCities.length) warn(`${thinCities.length} bysider uden lokal dokumentation (localProof). Politik: ${site.cityPolicy}${site.cityPolicy === 'noindex' ? ', de er sat til noindex' : ''}. Se listen i rapporten.`);
         if (thinCities.length) report.push('BYSIDER UDEN LOKAL DOKUMENTATION:\n' + thinCities.map(s => '  - ' + s).join('\n'));
+        // Mails: tjek at leadmail og bekræftelse har det, de skal bruge. Alt hentes automatisk fra site.json,
+        // så her fanges kun huller. Ingen manuel opsætning pr. kunde.
+        try {
+          const mbPath = path.join(out, 'mail-brand.json');
+          const mb = JSON.parse(fs.readFileSync(mbPath, 'utf8'));
+          // SVG-logo i public/: lav automatisk en PNG til mails (mailprogrammer viser ikke SVG).
+          const svg = site.brand?.logo;
+          if (!mb.logo && svg && svg.startsWith('/') && /\.svg$/i.test(svg) && fs.existsSync(path.join(out, svg))) {
+            const sharp = (await import('sharp')).default;
+            const buf = await sharp(path.join(out, svg), { density: 600 }).resize({ height: 96 }).png().toBuffer();
+            const meta = await sharp(buf).metadata();
+            fs.writeFileSync(path.join(out, 'mail-logo.png'), buf);
+            mb.logo = { src: '/mail-logo.png', width: Math.round(meta.width / 2), height: 48 };
+            fs.writeFileSync(mbPath, JSON.stringify(mb));
+          }
+          if (!mb.logo) (REMOTE_OPT || !/^https?:/.test(site.brand?.logo || '') ? warn : m => report.push('INFO: ' + m))('Mails: intet logo som PNG/JPG (SVG og WebP vises ikke i Outlook). Mailene viser firmanavnet som tekst i stedet.');
+          if (!mb.phone) warn('Mails: intet telefonnummer. Bekræftelsen får ingen ringeknap eller akutboks.');
+          if (!mb.responseNote) report.push('INFO: Mails: ingen responseNote i site.json. Bekræftelsen lover svar "hurtigst muligt".');
+          if (!mb.address || !mb.cvr) report.push('INFO: Mails: adresse eller CVR mangler i bekræftelsens signatur.');
+        } catch { warn('Mails: mail-brand.json blev ikke bygget. Mails sendes med navn og telefon fra miljøet.'); }
         const titles = new Map();
         for (const p of pagesMeta) {
           if (p.h1s !== 1) warn(`${p.rel}: ${p.h1s} H1-overskrifter (skal være 1)`);

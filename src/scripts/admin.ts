@@ -112,6 +112,9 @@ async function boot() {
   $('#login').hidden = true; $('#app').hidden = false;
   const cfg = await api('config'); stages = cfg.stages; views = cfg.views;
   await refresh();
+  // Direkte link fra leadmailen: ?lead=<id> åbner leadet med det samme (også efter login).
+  const want = new URLSearchParams(location.search).get('lead');
+  if (want && leads.some(l => l.id === want)) { history.replaceState(null, '', location.pathname); openTask(want); }
 }
 async function refresh() { try { leads = (await api('leads')).leads; render(); } catch { /* login vises */ } }
 

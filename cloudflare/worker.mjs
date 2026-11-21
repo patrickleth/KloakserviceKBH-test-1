@@ -10,6 +10,12 @@ const tooMany = () => new Response(JSON.stringify({ ok: false, fejl: 'For mange 
   status: 429, headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', 'Retry-After': '60' }
 });
 
+// Branding til mails (bygges som /mail-brand.json). Læses én gang pr. Worker-instans.
+let brandCache = null;
+const loadBrand = (env, url) => brandCache ||= env.ASSETS.fetch(new Request(new URL('/mail-brand.json', url)))
+  .then(r => (r.ok ? r.json() : null)).catch(() => null)
+  .then(b => { if (!b) brandCache = null; return b; });
+
 export default {
   async fetch(req, env, ctx) {
     const url = new URL(req.url);
@@ -28,7 +34,7 @@ export default {
     const store = cfStore(env.DB, env.FILES, env.SITE_ID);
     if (isLead) {
       const crm = env.CRM_ENABLED === 'false' ? null : crmStore(store);
-      return handleLead(req, env, { waitUntil: ctx.waitUntil.bind(ctx), crm });
+      return handleLead(req, env, { waitUntil: ctx.waitUntil.bind(ctx), crm, brand: () => loadBrand(env, req.url) });
     }
     return handleAdmin(req, env, { store, ip });
   }

@@ -236,3 +236,24 @@ test('bekræftelse kan slås fra pr. kunde', async () => {
   await handleLead(req(good), { ...env, CONFIRM_TO_LEAD: 'false' }, { fetch: f, now: () => NOW, log: () => {} });
   assert.equal(f.calls.filter(c => c.url.includes('mailgun') && c.init.body.get('to') === 'jens@example.dk').length, 0);
 });
+
+test('mailskabeloner: bekræftelsen gentager aldrig den besøgendes tekst og har kun faste links', async () => {
+  const { confirmMail: tpl } = await import('../netlify/lib/mail-templates.mjs');
+  const brand = { name: 'Firma', domain: 'https://firma.dk', phone: { display: '12 34 56 78', e164: '+4512345678' }, responseNote: 'Vi svarer inden for 2 timer' };
+  const m = tpl({ navn: 'Jens <b>Hansen</b>', beskrivelse: 'Køb billig viagra på spam.example', by: 'http://ond.example' }, brand, {}, { origin: 'https://firma.dk' });
+  assert.doesNotMatch(m.html, /viagra|ond\.example|<b>/i);
+  const links = [...m.html.matchAll(/href="([^"]+)"/g)].map(x => x[1]);
+  assert.deepEqual(links.sort(), ['https://firma.dk', 'tel:+4512345678']);
+  assert.match(m.html, /Tak for din henvendelse/);
+  assert.match(m.text, /Vi svarer inden for 2 timer\./);
+});
+
+test('mailskabeloner: leadmailen escaper HTML og har knapper til at ringe og svare', async () => {
+  const { leadMail: tpl } = await import('../netlify/lib/mail-templates.mjs');
+  const m = tpl({ id: 'abc', navn: 'Jens <script>', telefon: '12 34 56 78', email: 'jens@example.dk', by: 'Hvidovre', ydelser: ['Kloakspuling'], beskrivelse: 'Linje 1\n<img src=x>' }, { name: 'Firma' }, { origin: 'https://firma.dk', crm: true });
+  assert.doesNotMatch(m.html, /<script>|<img src=x>/);
+  assert.match(m.html, /href="tel:12345678"/);
+  assert.match(m.html, /href="mailto:jens@example\.dk/);
+  assert.match(m.html, /administrator-system\/\?lead=abc/);
+  assert.equal(m.subject, 'Ny henvendelse: Kloakspuling i Hvidovre (Jens <script>)');
+});

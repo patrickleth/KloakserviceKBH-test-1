@@ -135,3 +135,21 @@ Boksen til højre styres af `megaAside` i site.json (`heading`, `text`). Uden de
 **Blog og guides kun for SEO-kunder.** `"blog": { "enabled": false }` i site.json slår blogruter, menupunktet og afsnittet i llms.txt fra. `"label"` ændrer navnet (fx "Guides").
 
 **llms.txt** bygges automatisk med kontakt, ydelser, områder, blog og de øvrige sider.
+
+## Mails (leadmail og bekræftelse)
+
+Mailene bygges automatisk ud fra `site.json`. Der er intet at sætte op pr. kunde ud over det, siden alligevel skal have:
+`name`, `phone`, `brand.logo`, `tokens` (farver), `address`, `cvr`, `phoneHours`, `responseNote` og `rating`/`stats`.
+
+- Logoet laves automatisk til PNG (fjernbilleder ved bygning, SVG i `public/` via sharp), fordi Outlook ikke viser WebP eller SVG.
+- Byggerapporten (`rapport/<kunde>.txt`) advarer, hvis noget mangler, fx intet telefonnummer eller intet logo.
+- Valgfrit i `site.json`:
+
+```json
+"mail": {
+  "steps": ["Vi gennemgår din henvendelse", "Vi ringer dig op", "Du får et fast tilbud"],
+  "akut": "Tekst i akutboksen (standard: personCta.text)"
+}
+```
+
+Bekræftelsen gentager aldrig den besøgendes tekst, og de eneste links er telefonnummeret og kundens hjemmeside.
